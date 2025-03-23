@@ -177,15 +177,28 @@ impl Lexer {
                     ))),
                 ));
             }
-            _ => {}
+            _ => {
+                let token_string = self.source[self.current - 1].to_string();
+                if let Some(symbol) = SYMBOLS.get(token_string.as_str()) {
+                    return Ok(symbol.clone());
+                } else {
+                    if !self.is_at_end() {
+                        return Err(Error {
+                            error_kind: ErrorKind::LexerError,
+                            message: "Unexpected character".to_string(),
+                            line_number: self.line_number,
+                            pos: self.start,
+                        });
+                    } else {
+                        return Ok(symbol::Lexeme {
+                            text: "EOF".to_string(),
+                            len: 0,
+                            token: symbol::Token::EOF,
+                        });
+                    }
+                }
+            }
         }
-
-        Err(Error {
-            error_kind: ErrorKind::LexerError,
-            message: "Unexpected character".to_string(),
-            line_number: self.line_number,
-            pos: self.start,
-        })
     }
 
     pub fn scan_all_tokens(&mut self) {
