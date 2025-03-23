@@ -1,4 +1,4 @@
-use jsompiler::lexer::Lexer;
+use jsompiler::parser::lexer::Lexer;
 
 fn main() {
     println!("Hello, world!");
