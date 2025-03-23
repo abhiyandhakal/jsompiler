@@ -1,9 +1,10 @@
 use super::symbol::{Lexeme, LiteralToken, SYMBOLS, Token, lexeme};
-use crate::parser::symbol;
+use crate::{Error, ErrorKind, parser::symbol};
 
 pub struct Lexer {
     pub source: Vec<char>, // Code to be scanned
     pub tokens: Vec<Lexeme>,
+    pub errors: Vec<crate::Error>,
     pub start: usize,
     pub current: usize,
     pub line_number: usize,
@@ -16,6 +17,7 @@ impl Lexer {
             start: 0,
             current: 0,
             tokens: vec![],
+            errors: vec![],
             line_number: 1,
         }
     }
@@ -45,9 +47,9 @@ impl Lexer {
         }
     }
 
-    fn scan_token(&mut self) -> Option<symbol::Lexeme> {
+    fn scan_token(&mut self) -> Result<Lexeme, crate::Error> {
         if self.is_at_end() {
-            return Some(symbol::Lexeme {
+            return Ok(symbol::Lexeme {
                 text: "EOF".to_string(),
                 len: 0,
                 token: symbol::Token::EOF,
@@ -66,7 +68,7 @@ impl Lexer {
                 }
                 let token_string: String = self.source[self.start..self.current].iter().collect();
 
-                return Some(lexeme(
+                return Ok(lexeme(
                     token_string.clone(),
                     Token::Literal(LiteralToken::Number(token_string)),
                 ));
@@ -85,30 +87,57 @@ impl Lexer {
 
                 let keyword = SYMBOLS.iter().find(|f| f.0.to_string() == token_string);
                 if let Some(keyword) = keyword {
-                    return Some(keyword.1.clone());
+                    return Ok(keyword.1.clone());
                 }
 
-                return Some(lexeme(
+                return Ok(lexeme(
                     token_string.clone(),
                     Token::Identifier(token_string),
                 ));
             }
-            // Remaining
+            '"' => {}
             _ => {}
         }
 
-        None
+        Err(Error {
+            error_kind: ErrorKind::LexerError,
+            message: "Unexpected character".to_string(),
+            line_number: self.line_number,
+            pos: self.start,
+        })
     }
 
     pub fn scan_all_tokens(&mut self) {
         loop {
-            if let Some(token) = self.scan_token() {
-                self.tokens.push(token.clone());
+            match self.scan_token() {
+                Ok(token) => {
+                    self.tokens.push(token.clone());
 
-                if token.token == Token::EOF {
-                    break;
+                    if token.token == Token::EOF {
+                        break;
+                    }
+                }
+                Err(error) => {
+                    self.errors.push(error);
+                    self.go_to_new_line();
                 }
             }
+        }
+    }
+
+    fn go_to_new_line(&mut self) {
+        if let Some(index) = self
+            .source
+            .iter()
+            .skip(self.current)
+            .position(|&c| c == '\n')
+            .map(|pos| pos + self.current)
+        {
+            self.start = index + 1;
+            self.current = index + 1;
+        } else {
+            self.start = self.source.len();
+            self.current = self.source.len();
         }
     }
 

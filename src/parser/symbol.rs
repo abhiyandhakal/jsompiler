@@ -111,8 +111,7 @@ pub enum LiteralToken {
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum StringLiteral {
-    Single(String),   // 'string'
-    Double(String),   // "string"
+    Single(String),   // 'string' or "string"
     Template(String), // `string`
 }
 
