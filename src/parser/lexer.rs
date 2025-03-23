@@ -1,4 +1,6 @@
-use super::symbol::{Lexeme, LiteralToken, SYMBOLS, Token, lexeme};
+use std::collections::HashMap;
+
+use super::symbol::{DelimiterToken, Lexeme, LiteralToken, SYMBOLS, Token, lexeme};
 use crate::{Error, ErrorKind, parser::symbol};
 
 pub struct Lexer {
@@ -8,10 +10,15 @@ pub struct Lexer {
     pub start: usize,
     pub current: usize,
     pub line_number: usize,
+    string_delimiter_counts: HashMap<char, usize>,
 }
 
 impl Lexer {
     pub fn new(source: String) -> Self {
+        let mut hash = HashMap::new();
+        hash.insert('"', 0);
+        hash.insert('\'', 0);
+        hash.insert('`', 0);
         Self {
             source: source.chars().collect(),
             start: 0,
@@ -19,6 +26,7 @@ impl Lexer {
             tokens: vec![],
             errors: vec![],
             line_number: 1,
+            string_delimiter_counts: hash,
         }
     }
 
@@ -47,13 +55,13 @@ impl Lexer {
         }
     }
 
-    fn scan_token(&mut self) -> Result<Lexeme, crate::Error> {
+    fn scan_token(&mut self) -> Result<Option<Lexeme>, crate::Error> {
         if self.is_at_end() {
-            return Ok(symbol::Lexeme {
+            return Ok(Some(symbol::Lexeme {
                 text: "EOF".to_string(),
                 len: 0,
                 token: symbol::Token::EOF,
-            });
+            }));
         }
 
         self.skip_whitespaces();
@@ -61,6 +69,14 @@ impl Lexer {
         let c = self.advance();
 
         match c {
+            // New Line
+            '\n' => {
+                // self.advance();
+                return Ok(Some(lexeme(
+                    "\n".to_string(),
+                    Token::Delimiter(DelimiterToken::NewLine),
+                )));
+            }
             // Numbers
             '0'..='9' => {
                 while self.get_current_char().is_ascii_digit() {
@@ -68,10 +84,10 @@ impl Lexer {
                 }
                 let token_string: String = self.source[self.start..self.current].iter().collect();
 
-                return Ok(lexeme(
+                return Ok(Some(lexeme(
                     token_string.clone(),
                     Token::Literal(LiteralToken::Number(token_string)),
-                ));
+                )));
             }
             // Keywords and identifiers
             'a'..='z' | 'A'..='Z' | '_' | '$' => {
@@ -87,15 +103,19 @@ impl Lexer {
 
                 let keyword = SYMBOLS.iter().find(|f| f.0.to_string() == token_string);
                 if let Some(keyword) = keyword {
-                    return Ok(keyword.1.clone());
+                    return Ok(Some(keyword.1.clone()));
                 }
 
-                return Ok(lexeme(
+                return Ok(Some(lexeme(
                     token_string.clone(),
                     Token::Identifier(token_string),
-                ));
+                )));
             }
             '`' => {
+                *self.string_delimiter_counts.get_mut(&'`').unwrap() += 1;
+                if self.string_delimiter_counts[&'`'] % 2 == 0 {
+                    return Ok(None);
+                }
                 while self.get_current_char() != '`' {
                     if self.advance() == '\0' {
                         return Err(Error {
@@ -106,20 +126,16 @@ impl Lexer {
                         });
                     }
                 }
-                return Ok(lexeme(
+
+                return Ok(Some(lexeme(
                     self.source[self.start..=self.current].iter().collect(),
                     Token::Literal(LiteralToken::String(symbol::StringLiteral::Template(
                         self.source[self.start + 1..self.current].iter().collect(),
                     ))),
-                ));
+                )));
             }
             '"' => {
-                loop {
-                    self.advance();
-                    if self.get_current_char() == '"' {
-                        break;
-                    }
-
+                while self.get_current_char() != '"' {
                     if self.get_current_char() == '\0' {
                         return Err(Error {
                             error_kind: ErrorKind::LexerError,
@@ -137,25 +153,24 @@ impl Lexer {
                             pos: self.current,
                         });
                     }
+                    self.advance();
                 }
-                return Ok(lexeme(
-                    self.source[self.start..=self.current].iter().collect(),
+                self.advance(); // consume the closing quote
+                return Ok(Some(lexeme(
+                    self.source[self.start..self.current].iter().collect(),
                     Token::Literal(LiteralToken::String(symbol::StringLiteral::Template(
-                        self.source[self.start + 1..self.current].iter().collect(),
+                        self.source[self.start + 1..self.current - 1]
+                            .iter()
+                            .collect(),
                     ))),
-                ));
+                )));
             }
             '\'' => {
-                loop {
-                    self.advance();
-                    if self.get_current_char() == '\'' {
-                        break;
-                    }
-
+                while self.get_current_char() != '\'' {
                     if self.get_current_char() == '\0' {
                         return Err(Error {
                             error_kind: ErrorKind::LexerError,
-                            message: "String (\") not closed.".to_string(),
+                            message: "String (') not closed.".to_string(),
                             line_number: self.line_number,
                             pos: self.current,
                         });
@@ -169,18 +184,22 @@ impl Lexer {
                             pos: self.current,
                         });
                     }
+                    self.advance();
                 }
-                return Ok(lexeme(
-                    self.source[self.start..=self.current].iter().collect(),
+                self.advance(); // consume the closing quote
+                return Ok(Some(lexeme(
+                    self.source[self.start..self.current].iter().collect(),
                     Token::Literal(LiteralToken::String(symbol::StringLiteral::Template(
-                        self.source[self.start + 1..self.current].iter().collect(),
+                        self.source[self.start + 1..self.current - 1]
+                            .iter()
+                            .collect(),
                     ))),
-                ));
+                )));
             }
             _ => {
                 let token_string = self.source[self.current - 1].to_string();
                 if let Some(symbol) = SYMBOLS.get(token_string.as_str()) {
-                    return Ok(symbol.clone());
+                    return Ok(Some(symbol.clone()));
                 } else {
                     if !self.is_at_end() {
                         return Err(Error {
@@ -190,11 +209,11 @@ impl Lexer {
                             pos: self.start,
                         });
                     } else {
-                        return Ok(symbol::Lexeme {
+                        return Ok(Some(symbol::Lexeme {
                             text: "EOF".to_string(),
                             len: 0,
                             token: symbol::Token::EOF,
-                        });
+                        }));
                     }
                 }
             }
@@ -204,13 +223,14 @@ impl Lexer {
     pub fn scan_all_tokens(&mut self) {
         loop {
             match self.scan_token() {
-                Ok(token) => {
+                Ok(Some(token)) => {
                     self.tokens.push(token.clone());
 
                     if token.token == Token::EOF {
                         break;
                     }
                 }
+                Ok(None) => {}
                 Err(error) => {
                     self.errors.push(error);
                     self.go_to_new_line();

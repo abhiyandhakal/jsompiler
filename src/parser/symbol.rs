@@ -98,6 +98,7 @@ pub enum DelimiterToken {
     Semicolon,    // ;
     Comma,        // ,
     Dot,          // .
+    NewLine,      // \n
 }
 
 #[derive(Debug, PartialEq, Clone)]
