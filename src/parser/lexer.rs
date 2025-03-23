@@ -97,7 +97,78 @@ impl Lexer {
             }
             '`' => {
                 while self.get_current_char() != '`' {
+                    if self.advance() == '\0' {
+                        return Err(Error {
+                            error_kind: ErrorKind::LexerError,
+                            message: "Template string (`) not closed.".to_string(),
+                            line_number: self.line_number,
+                            pos: self.current,
+                        });
+                    }
+                }
+                return Ok(lexeme(
+                    self.source[self.start..=self.current].iter().collect(),
+                    Token::Literal(LiteralToken::String(symbol::StringLiteral::Template(
+                        self.source[self.start + 1..self.current].iter().collect(),
+                    ))),
+                ));
+            }
+            '"' => {
+                loop {
                     self.advance();
+                    if self.get_current_char() == '"' {
+                        break;
+                    }
+
+                    if self.get_current_char() == '\0' {
+                        return Err(Error {
+                            error_kind: ErrorKind::LexerError,
+                            message: "String (\") not closed.".to_string(),
+                            line_number: self.line_number,
+                            pos: self.current,
+                        });
+                    }
+
+                    if self.get_current_char() == '\n' {
+                        return Err(Error {
+                            error_kind: ErrorKind::LexerError,
+                            message: "String (\") not closed.".to_string(),
+                            line_number: self.line_number,
+                            pos: self.current,
+                        });
+                    }
+                }
+                return Ok(lexeme(
+                    self.source[self.start..=self.current].iter().collect(),
+                    Token::Literal(LiteralToken::String(symbol::StringLiteral::Template(
+                        self.source[self.start + 1..self.current].iter().collect(),
+                    ))),
+                ));
+            }
+            '\'' => {
+                loop {
+                    self.advance();
+                    if self.get_current_char() == '\'' {
+                        break;
+                    }
+
+                    if self.get_current_char() == '\0' {
+                        return Err(Error {
+                            error_kind: ErrorKind::LexerError,
+                            message: "String (\") not closed.".to_string(),
+                            line_number: self.line_number,
+                            pos: self.current,
+                        });
+                    }
+
+                    if self.get_current_char() == '\n' {
+                        return Err(Error {
+                            error_kind: ErrorKind::LexerError,
+                            message: "String (') not closed.".to_string(),
+                            line_number: self.line_number,
+                            pos: self.current,
+                        });
+                    }
                 }
                 return Ok(lexeme(
                     self.source[self.start..=self.current].iter().collect(),
