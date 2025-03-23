@@ -95,7 +95,17 @@ impl Lexer {
                     Token::Identifier(token_string),
                 ));
             }
-            '"' => {}
+            '`' => {
+                while self.get_current_char() != '`' {
+                    self.advance();
+                }
+                return Ok(lexeme(
+                    self.source[self.start..=self.current].iter().collect(),
+                    Token::Literal(LiteralToken::String(symbol::StringLiteral::Template(
+                        self.source[self.start + 1..self.current].iter().collect(),
+                    ))),
+                ));
+            }
             _ => {}
         }
 
