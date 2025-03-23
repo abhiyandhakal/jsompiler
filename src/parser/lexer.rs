@@ -1,10 +1,12 @@
+use super::symbol::{Lexeme, LiteralToken, Token, lexeme};
 use crate::parser::symbol;
-use crate::parser::symbol::SYMBOLS;
 
 pub struct Lexer {
-    source: Vec<char>, // Code to be scanned
-    start: usize,
-    current: usize,
+    pub source: Vec<char>, // Code to be scanned
+    pub tokens: Vec<Lexeme>,
+    pub start: usize,
+    pub current: usize,
+    pub line_number: usize,
 }
 
 impl Lexer {
@@ -13,6 +15,8 @@ impl Lexer {
             source: source.chars().collect(),
             start: 0,
             current: 0,
+            tokens: vec![],
+            line_number: 1,
         }
     }
 
@@ -30,6 +34,10 @@ impl Lexer {
 
     fn advance(&mut self) -> char {
         self.current += 1;
+        if self.get_current_char() == '\n' {
+            self.line_number += 1;
+        }
+
         if self.is_at_end() {
             return '\0';
         } else {
@@ -37,13 +45,43 @@ impl Lexer {
         }
     }
 
-    fn scan_token(&mut self) -> Option<symbol::Symbol> {
-        //
+    fn scan_token(&mut self) -> Option<symbol::Lexeme> {
+        if self.is_at_end() {
+            return Some(symbol::Lexeme {
+                text: "EOF".to_string(),
+                len: 0,
+                token: symbol::Token::EOF,
+            });
+        }
+
+        self.skip_whitespaces();
+        self.start = self.current;
+        let c = self.advance();
+
+        match c {
+            // Numbers
+            '0'..='9' => {
+                while self.get_current_char().is_ascii_digit() {
+                    self.advance();
+                }
+                let token_string: String = self.source[self.start..self.current].iter().collect();
+
+                Some(lexeme(
+                    token_string.clone(),
+                    Token::Literal(LiteralToken::Number(token_string)),
+                ));
+            }
+            _ => {}
+        }
+
+        None
     }
 
     pub fn scan_all_tokens(&mut self) {
         while !self.is_at_end() {
-            let _token = self.scan_token();
+            if let Some(token) = self.scan_token() {
+                self.tokens.push(token);
+            }
         }
     }
 
