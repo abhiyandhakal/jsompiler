@@ -1,4 +1,4 @@
-use super::symbol::{Lexeme, LiteralToken, Token, lexeme};
+use super::symbol::{Lexeme, LiteralToken, SYMBOLS, Token, lexeme};
 use crate::parser::symbol;
 
 pub struct Lexer {
@@ -66,11 +66,34 @@ impl Lexer {
                 }
                 let token_string: String = self.source[self.start..self.current].iter().collect();
 
-                Some(lexeme(
+                return Some(lexeme(
                     token_string.clone(),
                     Token::Literal(LiteralToken::Number(token_string)),
                 ));
             }
+            // Keywords and identifiers
+            'a'..='z' | 'A'..='Z' | '_' | '$' => {
+                while self.get_current_char().is_alphanumeric()
+                    || self.get_current_char() == '_'
+                    || self.get_current_char() == '$'
+                {
+                    self.advance();
+                }
+                let token_string = self.source[self.start..self.current]
+                    .iter()
+                    .collect::<String>();
+
+                let keyword = SYMBOLS.iter().find(|f| f.0.to_string() == token_string);
+                if let Some(keyword) = keyword {
+                    return Some(keyword.1.clone());
+                }
+
+                return Some(lexeme(
+                    token_string.clone(),
+                    Token::Identifier(token_string),
+                ));
+            }
+            // Remaining
             _ => {}
         }
 
@@ -78,9 +101,13 @@ impl Lexer {
     }
 
     pub fn scan_all_tokens(&mut self) {
-        while !self.is_at_end() {
+        loop {
             if let Some(token) = self.scan_token() {
-                self.tokens.push(token);
+                self.tokens.push(token.clone());
+
+                if token.token == Token::EOF {
+                    break;
+                }
             }
         }
     }

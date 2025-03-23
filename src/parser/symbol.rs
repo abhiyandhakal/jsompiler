@@ -1,14 +1,14 @@
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Lexeme {
     pub text: String,
     pub len: usize,
     pub token: Token,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Token {
     Keyword(KeywordToken),
     Operator(OperatorToken),
@@ -21,7 +21,7 @@ pub enum Token {
     EOF,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum KeywordToken {
     Const,
     Let,
@@ -48,7 +48,7 @@ pub enum KeywordToken {
     Throw,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum OperatorToken {
     // Arithmetic
     Plus,
@@ -87,7 +87,7 @@ pub enum OperatorToken {
     OptionalChain,   // ?.
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum DelimiterToken {
     OpenParen,    // (
     CloseParen,   // )
@@ -100,7 +100,7 @@ pub enum DelimiterToken {
     Dot,          // .
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum LiteralToken {
     Number(String),
     String(StringLiteral),
@@ -109,14 +109,14 @@ pub enum LiteralToken {
     Undefined,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum StringLiteral {
     Single(String),   // 'string'
     Double(String),   // "string"
     Template(String), // `string`
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum CommentToken {
     Line(String),
     Block(String),
