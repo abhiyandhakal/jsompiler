@@ -187,12 +187,51 @@ impl Lexer {
                     ))),
                 )));
             }
+            '/' => {
+                if self.start + 1 <= self.source.len() {
+                    let next_char = self.source[self.start + 1];
+                    match next_char {
+                        // Single Line Comment
+                        '/' => {
+                            loop {
+                                if self.get_current_char() == '\n' {
+                                    break;
+                                }
+                                self.advance();
+                            }
+                            return Ok(Some(lexeme(
+                                self.source[self.start..self.current].iter().collect(),
+                                Token::Comment(symbol::CommentToken::Line(
+                                    self.source[self.start + 2..self.current].iter().collect(),
+                                )),
+                            )));
+                        }
+                        _ => {}
+                    }
+                }
+
+                return Ok(None);
+            }
             _ => {
-                let token_string = self.source[self.current - 1].to_string();
-                if let Some(symbol) = SYMBOLS.get(token_string.as_str()) {
-                    return Ok(Some(symbol.clone()));
-                } else {
-                    if !self.is_at_end() {
+                if !self.is_at_end() {
+                    let mut longest_match = None;
+
+                    for len in (1..=3).rev() {
+                        let end_index = self.start + len;
+                        if end_index >= self.source.len() {
+                            continue;
+                        }
+                        let lexeme_slice: String =
+                            self.source[self.start..end_index].iter().collect();
+
+                        if let Some(symbol) = SYMBOLS.get(lexeme_slice.as_str()) {
+                            longest_match = Some(symbol.clone());
+                            self.current += len - 1;
+                            break;
+                        }
+                    }
+
+                    if let None = longest_match {
                         return Err(Error {
                             error_kind: ErrorKind::LexerError,
                             message: "Unexpected character".to_string(),
@@ -200,13 +239,14 @@ impl Lexer {
                             pos: self.start,
                         });
                     } else {
-                        return Ok(Some(symbol::Lexeme {
-                            text: "EOF".to_string(),
-                            len: 0,
-                            token: symbol::Token::EOF,
-                        }));
+                        return Ok(longest_match);
                     }
                 }
+                return Ok(Some(symbol::Lexeme {
+                    text: "EOF".to_string(),
+                    len: 0,
+                    token: symbol::Token::EOF,
+                }));
             }
         }
     }
