@@ -1,5 +1,7 @@
-use super::symbol::{DelimiterToken, Lexeme, LiteralToken, SYMBOLS, Token, lexeme};
-use crate::{Error, ErrorKind, parser::symbol};
+pub mod symbol;
+
+use crate::lexer::symbol::{DelimiterToken, Lexeme, LiteralToken, SYMBOLS, Token, lexeme};
+use crate::{Error, ErrorKind};
 
 pub struct Lexer {
     pub source: Vec<char>, // Code to be scanned
@@ -248,7 +250,7 @@ impl Lexer {
                         // Regex and other operators
                         _ => {
                             let last_token = self.tokens.last();
-                            let mut is_else = false;
+                            let is_else;
                             if let Some(last_token) = last_token {
                                 if let Token::Operator(_) = last_token.token {
                                     loop {

@@ -1,6 +1,6 @@
 use std::fs::read_to_string;
 
-use jsompiler::parser::lexer::Lexer;
+use jsompiler::lexer::Lexer;
 
 fn main() {
     let file = read_to_string("./test.js");

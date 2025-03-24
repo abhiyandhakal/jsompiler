@@ -1,4 +1,4 @@
-pub mod parser;
+pub mod lexer;
 
 #[derive(Debug)]
 pub enum ErrorKind {
