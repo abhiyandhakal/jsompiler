@@ -1,8 +1,7 @@
-pub mod ast;
 pub mod lexer;
-pub mod parserr;
+pub mod parser;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ErrorKind {
     LexerError,
     SyntaxError,
@@ -10,7 +9,7 @@ pub enum ErrorKind {
     UnexpectedToken,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Error {
     pub error_kind: ErrorKind,
     pub message: String,

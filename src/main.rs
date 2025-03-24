@@ -1,5 +1,5 @@
 use jsompiler::lexer::Lexer;
-use jsompiler::parserr::Parser;
+use jsompiler::parser::Parser;
 use std::fs::read_to_string;
 
 fn main() {
@@ -14,4 +14,8 @@ fn main() {
     lexer.scan_all_tokens();
     println!("{:#?}", lexer.tokens);
     println!("{:#?}", lexer.errors);
+
+    let mut parser = Parser::new(lexer.tokens);
+    parser.parse_expression().unwrap();
+    println!("{:#?}", parser.ast);
 }
