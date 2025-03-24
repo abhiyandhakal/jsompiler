@@ -78,6 +78,19 @@ impl Lexer {
                 }
                 let token_string: String = self.source[self.start..self.current].iter().collect();
 
+                if self.get_current_char() == '.' {
+                    self.advance();
+                    while self.get_current_char().is_ascii_digit() {
+                        self.advance();
+                    }
+                    let token_string: String =
+                        self.source[self.start..self.current].iter().collect();
+                    return Ok(Some(lexeme(
+                        token_string.clone(),
+                        Token::Literal(LiteralToken::Number(token_string)),
+                    )));
+                }
+
                 return Ok(Some(lexeme(
                     token_string.clone(),
                     Token::Literal(LiteralToken::Number(token_string)),
