@@ -147,6 +147,19 @@ lazy_static! {
         m.insert("break", lexeme("break".to_string(), Token::Keyword(KeywordToken::Break)));
         m.insert("continue", lexeme("continue".to_string(), Token::Keyword(KeywordToken::Continue)));
 
+        // Additional keywords
+        m.insert("class", lexeme("class".to_string(), Token::Keyword(KeywordToken::Class)));
+        m.insert("new", lexeme("new".to_string(), Token::Keyword(KeywordToken::New)));
+        m.insert("this", lexeme("this".to_string(), Token::Keyword(KeywordToken::This)));
+        m.insert("super", lexeme("super".to_string(), Token::Keyword(KeywordToken::Super)));
+        m.insert("import", lexeme("import".to_string(), Token::Keyword(KeywordToken::Import)));
+        m.insert("export", lexeme("export".to_string(), Token::Keyword(KeywordToken::Export)));
+        m.insert("default", lexeme("default".to_string(), Token::Keyword(KeywordToken::Default)));
+        m.insert("try", lexeme("try".to_string(), Token::Keyword(KeywordToken::Try)));
+        m.insert("catch", lexeme("catch".to_string(), Token::Keyword(KeywordToken::Catch)));
+        m.insert("finally", lexeme("finally".to_string(), Token::Keyword(KeywordToken::Finally)));
+        m.insert("throw", lexeme("throw".to_string(), Token::Keyword(KeywordToken::Throw)));
+
         // Operators
         m.insert("+", lexeme("+".to_string(), Token::Operator(OperatorToken::Plus)));
         m.insert("-", lexeme("-".to_string(), Token::Operator(OperatorToken::Minus)));
@@ -166,6 +179,19 @@ lazy_static! {
         m.insert("||", lexeme("||".to_string(), Token::Operator(OperatorToken::Or)));
         m.insert("!", lexeme("!".to_string(), Token::Operator(OperatorToken::Not)));
         m.insert("=>", lexeme("=>".to_string(), Token::Operator(OperatorToken::Arrow)));
+
+        // Additional operators
+        m.insert("+=", lexeme("+=".to_string(), Token::Operator(OperatorToken::PlusEqual)));
+        m.insert("-=", lexeme("-=".to_string(), Token::Operator(OperatorToken::MinusEqual)));
+        m.insert("*=", lexeme("*=".to_string(), Token::Operator(OperatorToken::AsteriskEqual)));
+        m.insert("/=", lexeme("/=".to_string(), Token::Operator(OperatorToken::SlashEqual)));
+        m.insert("%=", lexeme("%=".to_string(), Token::Operator(OperatorToken::PercentEqual)));
+        m.insert("++", lexeme("++".to_string(), Token::Operator(OperatorToken::Increment)));
+        m.insert("--", lexeme("--".to_string(), Token::Operator(OperatorToken::Decrement)));
+        m.insert("?", lexeme("?".to_string(), Token::Operator(OperatorToken::QuestionMark)));
+        m.insert(":", lexeme(":".to_string(), Token::Operator(OperatorToken::Colon)));
+        m.insert("??", lexeme("??".to_string(), Token::Operator(OperatorToken::NullishCoalesce)));
+        m.insert("?.", lexeme("?.".to_string(), Token::Operator(OperatorToken::OptionalChain)));
 
         // Delimiters
         m.insert("(", lexeme("(".to_string(), Token::Delimiter(DelimiterToken::OpenParen)));
