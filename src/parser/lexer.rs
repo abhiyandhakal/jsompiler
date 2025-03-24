@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use super::symbol::{DelimiterToken, Lexeme, LiteralToken, SYMBOLS, Token, lexeme};
 use crate::{Error, ErrorKind, parser::symbol};
 
@@ -10,15 +8,10 @@ pub struct Lexer {
     pub start: usize,
     pub current: usize,
     pub line_number: usize,
-    string_delimiter_counts: HashMap<char, usize>,
 }
 
 impl Lexer {
     pub fn new(source: String) -> Self {
-        let mut hash = HashMap::new();
-        hash.insert('"', 0);
-        hash.insert('\'', 0);
-        hash.insert('`', 0);
         Self {
             source: source.chars().collect(),
             start: 0,
@@ -26,7 +19,6 @@ impl Lexer {
             tokens: vec![],
             errors: vec![],
             line_number: 1,
-            string_delimiter_counts: hash,
         }
     }
 
@@ -112,12 +104,8 @@ impl Lexer {
                 )));
             }
             '`' => {
-                *self.string_delimiter_counts.get_mut(&'`').unwrap() += 1;
-                if self.string_delimiter_counts[&'`'] % 2 == 0 {
-                    return Ok(None);
-                }
                 while self.get_current_char() != '`' {
-                    if self.advance() == '\0' {
+                    if self.get_current_char() == '\0' {
                         return Err(Error {
                             error_kind: ErrorKind::LexerError,
                             message: "Template string (`) not closed.".to_string(),
@@ -125,12 +113,15 @@ impl Lexer {
                             pos: self.current,
                         });
                     }
+                    self.advance();
                 }
-
+                self.advance(); // consume the closing quote
                 return Ok(Some(lexeme(
-                    self.source[self.start..=self.current].iter().collect(),
+                    self.source[self.start..self.current].iter().collect(),
                     Token::Literal(LiteralToken::String(symbol::StringLiteral::Template(
-                        self.source[self.start + 1..self.current].iter().collect(),
+                        self.source[self.start + 1..self.current - 1]
+                            .iter()
+                            .collect(),
                     ))),
                 )));
             }
@@ -158,7 +149,7 @@ impl Lexer {
                 self.advance(); // consume the closing quote
                 return Ok(Some(lexeme(
                     self.source[self.start..self.current].iter().collect(),
-                    Token::Literal(LiteralToken::String(symbol::StringLiteral::Template(
+                    Token::Literal(LiteralToken::String(symbol::StringLiteral::Regular(
                         self.source[self.start + 1..self.current - 1]
                             .iter()
                             .collect(),
@@ -189,7 +180,7 @@ impl Lexer {
                 self.advance(); // consume the closing quote
                 return Ok(Some(lexeme(
                     self.source[self.start..self.current].iter().collect(),
-                    Token::Literal(LiteralToken::String(symbol::StringLiteral::Template(
+                    Token::Literal(LiteralToken::String(symbol::StringLiteral::Regular(
                         self.source[self.start + 1..self.current - 1]
                             .iter()
                             .collect(),
