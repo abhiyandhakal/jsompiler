@@ -1,9 +1,12 @@
-use crate::lexer::symbol::{DelimiterToken, Lexeme, LiteralToken, OperatorToken, Token};
+use crate::lexer::symbol::{
+    DelimiterToken, KeywordToken, Lexeme, LiteralToken, OperatorToken, Token,
+};
 use crate::{Error, ErrorKind};
 
 #[derive(Debug)]
 pub enum Node {
     Expression(Expression),
+    Statement(Statement),
 }
 
 #[derive(Debug, Clone)]
@@ -22,6 +25,11 @@ pub enum Expression {
 }
 
 #[derive(Debug, Clone)]
+pub enum Statement {
+    LetStatement(LetStatement),
+}
+
+#[derive(Debug, Clone)]
 pub struct Identifier {
     pub token: Lexeme,
     pub value: String,
@@ -34,6 +42,12 @@ pub struct Parser {
     pub ast: Vec<Node>,
 }
 
+#[derive(Debug, Clone)]
+pub struct LetStatement {
+    pub token: Token,
+    pub value: Box<Expression>,
+}
+
 impl Parser {
     pub fn new(tokens: Vec<Lexeme>) -> Self {
         Self {
@@ -41,6 +55,17 @@ impl Parser {
             current: 0,
             errors: Vec::new(),
             ast: Vec::new(),
+        }
+    }
+
+    pub fn parse(&mut self) {
+        while !self.is_at_end() {
+            match self.parse_statement() {
+                Ok(statement) => {
+                    self.ast.push(Node::Statement(statement));
+                }
+                Err(errors) => self.errors.extend(errors),
+            }
         }
     }
 
@@ -154,6 +179,61 @@ impl Parser {
         }
 
         Ok(left)
+    }
+
+    fn parse_statement(&mut self) -> Result<Statement, Vec<Error>> {
+        match self.peek().token {
+            Token::Keyword(KeywordToken::Let) => self.parse_let_statement(),
+            Token::Keyword(KeywordToken::Var) => self.parse_let_statement(),
+            Token::Keyword(KeywordToken::Const) => self.parse_let_statement(),
+            _ => Err(vec![Error {
+                error_kind: ErrorKind::UnexpectedToken,
+                message: "Expected statement".to_string(),
+                line_number: 1,
+                pos: 2,
+            }]),
+        }
+    }
+
+    fn parse_let_statement(&mut self) -> Result<Statement, Vec<Error>> {
+        if !self.match_token(&Token::Keyword(KeywordToken::Let))
+            && !self.match_token(&Token::Keyword(KeywordToken::Var))
+            && !self.match_token(&Token::Keyword(KeywordToken::Const))
+        {
+            return Err(vec![Error {
+                error_kind: ErrorKind::UnexpectedToken,
+                message: "Expected 'let', 'var' or 'const'".to_string(),
+                line_number: 1,
+                pos: 2,
+            }]);
+        }
+
+        if let Token::Identifier(_) = self.peek().token {
+            self.advance();
+            let name = self.previous().clone();
+            if !self.match_token(&Token::Operator(OperatorToken::EqualTo)) {
+                return Err(vec![Error {
+                    error_kind: ErrorKind::UnexpectedToken,
+                    message: "Expected '=' after variable name".to_string(),
+                    line_number: 1,
+                    pos: 2,
+                }]);
+            }
+
+            let value = Box::new(self.expression()?);
+
+            Ok(Statement::LetStatement(LetStatement {
+                token: name.token,
+                value,
+            }))
+        } else {
+            Err(vec![Error {
+                error_kind: ErrorKind::UnexpectedToken,
+                message: "Expected identifier after 'let'".to_string(),
+                line_number: 1,
+                pos: 2,
+            }])
+        }
     }
 
     fn match_operator(&mut self, operators: &[OperatorToken]) -> Option<OperatorToken> {
