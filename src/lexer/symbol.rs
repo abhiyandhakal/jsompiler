@@ -211,3 +211,50 @@ lazy_static! {
         m // return
     };
 }
+
+impl ToString for OperatorToken {
+    fn to_string(&self) -> String {
+        match self {
+            // Arithmetic
+            OperatorToken::Plus => "+".to_string(),
+            OperatorToken::Minus => "-".to_string(),
+            OperatorToken::Asterisk => "*".to_string(),
+            OperatorToken::Slash => "/".to_string(),
+            OperatorToken::Percent => "%".to_string(),
+
+            // Assignment
+            OperatorToken::EqualTo => "=".to_string(),
+
+            // Comparison
+            OperatorToken::DoubleEqual => "==".to_string(),
+            OperatorToken::StrictEqual => "===".to_string(),
+            OperatorToken::NotEqual => "!=".to_string(),
+            OperatorToken::StrictNotEqual => "!==".to_string(),
+            OperatorToken::Greater => ">".to_string(),
+            OperatorToken::Less => "<".to_string(),
+            OperatorToken::GreaterEqual => ">=".to_string(),
+            OperatorToken::LessEqual => "<=".to_string(),
+
+            // Logical
+            OperatorToken::And => "&&".to_string(),
+            OperatorToken::Or => "||".to_string(),
+            OperatorToken::Not => "!".to_string(),
+
+            // Other
+            OperatorToken::Arrow => "=>".to_string(),
+
+            // Additional Operators
+            OperatorToken::PlusEqual => "+=".to_string(),
+            OperatorToken::MinusEqual => "-=".to_string(),
+            OperatorToken::AsteriskEqual => "*=".to_string(),
+            OperatorToken::SlashEqual => "/=".to_string(),
+            OperatorToken::PercentEqual => "%=".to_string(),
+            OperatorToken::Increment => "++".to_string(),
+            OperatorToken::Decrement => "--".to_string(),
+            OperatorToken::QuestionMark => "?".to_string(),
+            OperatorToken::Colon => ":".to_string(),
+            OperatorToken::NullishCoalesce => "??".to_string(),
+            OperatorToken::OptionalChain => "?. ".to_string(),
+        }
+    }
+}

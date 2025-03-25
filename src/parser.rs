@@ -1,4 +1,4 @@
-use crate::lexer::symbol::{Lexeme, LiteralToken, OperatorToken, Token};
+use crate::lexer::symbol::{DelimiterToken, Lexeme, LiteralToken, OperatorToken, Token};
 use crate::{Error, ErrorKind};
 
 #[derive(Debug)]
@@ -60,12 +60,15 @@ impl Parser {
     }
 
     fn expression(&mut self) -> Result<Expression, Vec<Error>> {
-        self.unary()
+        self.term() // Start from highest precedence binary operations
     }
 
     fn unary(&mut self) -> Result<Expression, Vec<Error>> {
         if self.match_token(&Token::Operator(OperatorToken::Minus))
             || self.match_token(&Token::Operator(OperatorToken::Not))
+            || self.match_token(&Token::Operator(OperatorToken::Plus))
+            || self.match_token(&Token::Operator(OperatorToken::Increment))
+            || self.match_token(&Token::Operator(OperatorToken::Decrement))
         {
             let op = self.previous().clone();
             let expr = self.unary()?;
@@ -79,23 +82,87 @@ impl Parser {
     }
 
     fn primary(&mut self) -> Result<Expression, Vec<Error>> {
+        if self.match_token(&Token::Delimiter(DelimiterToken::OpenParen)) {
+            let expr = self.expression()?; // Parse inner expression
+
+            if !self.match_token(&Token::Delimiter(DelimiterToken::CloseParen)) {
+                return Err(vec![Error {
+                    error_kind: ErrorKind::UnexpectedToken,
+                    message: "Expected ')' after expression".to_string(),
+                    line_number: 1,
+                    pos: 2,
+                }]);
+            }
+
+            return Ok(expr); // Return the inner expression
+        }
+
         if let Token::Identifier(_) = self.peek().token {
             self.advance();
             let identifier = self.previous().clone();
-            Ok(Expression::Identifier(Identifier {
+            return Ok(Expression::Identifier(Identifier {
                 token: identifier.clone(),
                 value: identifier.text.clone(),
-            }))
-        } else if let Some(literal) = self.match_literal() {
-            Ok(Expression::Literal(literal))
-        } else {
-            Err(vec![Error {
-                error_kind: ErrorKind::UnexpectedToken,
-                message: "Expected expression".to_string(),
-                line_number: 1,
-                pos: 2,
-            }])
+            }));
         }
+
+        if let Some(literal) = self.match_literal() {
+            return Ok(Expression::Literal(literal));
+        }
+
+        Err(vec![Error {
+            error_kind: ErrorKind::UnexpectedToken,
+            message: "Expected expression".to_string(),
+            line_number: 1,
+            pos: 2,
+        }])
+    }
+
+    fn term(&mut self) -> Result<Expression, Vec<Error>> {
+        let mut left = self.factor()?; // Parse the first operand
+
+        while let Some(op) = self.match_operator(&[OperatorToken::Plus, OperatorToken::Minus]) {
+            let right = self.factor()?; // Parse the second operand
+            left = Expression::Binary {
+                left: Box::new(left),
+                op: Lexeme {
+                    token: Token::Operator(op.clone()),
+                    text: op.to_string(),
+                    len: 1,
+                },
+                right: Box::new(right),
+            };
+        }
+
+        Ok(left)
+    }
+
+    fn factor(&mut self) -> Result<Expression, Vec<Error>> {
+        let mut left = self.unary()?; // Parse unary first
+
+        while let Some(op) = self.match_operator(&[OperatorToken::Asterisk, OperatorToken::Slash]) {
+            let right = self.unary()?; // Parse the second operand
+            left = Expression::Binary {
+                left: Box::new(left),
+                op: Lexeme {
+                    token: Token::Operator(op.clone()),
+                    text: op.to_string(),
+                    len: 1,
+                },
+                right: Box::new(right),
+            };
+        }
+
+        Ok(left)
+    }
+
+    fn match_operator(&mut self, operators: &[OperatorToken]) -> Option<OperatorToken> {
+        for op in operators {
+            if self.match_token(&Token::Operator(op.clone())) {
+                return Some(op.clone());
+            }
+        }
+        None
     }
 
     fn match_literal(&mut self) -> Option<LiteralToken> {
