@@ -296,5 +296,6 @@ impl Parser {
 
     fn is_at_end(&self) -> bool {
         self.tokens[self.current].token == Token::EOF
+            || self.tokens[self.current].token == Token::Delimiter(DelimiterToken::Semicolon)
     }
 }
