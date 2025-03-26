@@ -24,7 +24,7 @@ impl Parser {
             }]);
         }
 
-        if let Token::Identifier(_) = self.peek().token {
+        if let Token::Identifier(c) = &self.peek().token {
             let token = self.previous().clone();
             self.advance();
             let name = self.previous().clone();

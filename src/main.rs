@@ -18,4 +18,5 @@ fn main() {
     let mut parser = Parser::new(lexer.tokens);
     parser.parse();
     println!("{:#?}", parser.ast);
+    println!("{:#?}", parser.errors);
 }

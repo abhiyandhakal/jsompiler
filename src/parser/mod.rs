@@ -51,35 +51,41 @@ impl Parser {
 
     pub fn parse(&mut self) {
         while !self.is_at_end() {
-            // println!("Looping");
+            println!("Looping");
             match self.parse_statement() {
                 Ok(statement) => {
                     self.ast.push(Node::Statement(statement));
                 }
-                Err(errors) => self.errors.extend(errors),
+                Err(errors) => {
+                    self.errors.extend(errors);
+                    break;
+                }
             }
         }
     }
 
     fn parse_statement(&mut self) -> Result<Statement, Vec<Error>> {
-        match self.peek().token {
+        match &self.peek().token {
             Token::Delimiter(DelimiterToken::Semicolon)
             | Token::Delimiter(DelimiterToken::NewLine)
             | Token::Delimiter(DelimiterToken::CloseBrace) => {
                 self.advance();
                 self.parse_statement()
             }
-            Token::Keyword(KeywordToken::Let) => self.parse_let_statement(),
-            Token::Keyword(KeywordToken::Var) => self.parse_let_statement(),
-            Token::Keyword(KeywordToken::Const) => self.parse_let_statement(),
+            Token::Keyword(KeywordToken::Let)
+            | Token::Keyword(KeywordToken::Var)
+            | Token::Keyword(KeywordToken::Const) => self.parse_let_statement(),
             Token::Keyword(KeywordToken::Return) => self.parse_return_statement(),
             Token::Delimiter(DelimiterToken::OpenBrace) => self.parse_block_statement(),
-            _ => Err(vec![Error {
-                error_kind: ErrorKind::UnexpectedToken,
-                message: "Expected statement".to_string(),
-                line_number: 1,
-                pos: 2,
-            }]),
+            c => {
+                println!("Unexpected {:?}", c);
+                return Err(vec![Error {
+                    error_kind: ErrorKind::UnexpectedToken,
+                    message: "Expected statement".to_string(),
+                    line_number: 1,
+                    pos: 2,
+                }]);
+            }
         }
     }
 
@@ -142,10 +148,6 @@ impl Parser {
     }
 
     fn is_at_end(&self) -> bool {
-        println!(
-            "Current: {}, Tokens: {:?}",
-            self.current, self.tokens[self.current].token
-        );
         self.tokens[self.current].token == Token::EOF
     }
 }
