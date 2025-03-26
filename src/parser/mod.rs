@@ -23,6 +23,7 @@ pub enum Node {
 pub enum Statement {
     LetStatement(LetStatement),
     ReturnStatement(ReturnStatement),
+    ExpressionStatement(Expression),
     BlockStatement(BlockStatement),
 }
 
@@ -51,7 +52,6 @@ impl Parser {
 
     pub fn parse(&mut self) {
         while !self.is_at_end() {
-            // println!("Looping");
             match self.parse_statement() {
                 Ok(statement) => {
                     self.ast.push(Node::Statement(statement));
@@ -67,6 +67,9 @@ impl Parser {
             | Token::Delimiter(DelimiterToken::NewLine) => {
                 self.advance();
                 self.parse_statement()
+            }
+            Token::Identifier(_) | Token::Literal(_) | Token::Operator(_) => {
+                self.parse_expression()
             }
             Token::Keyword(KeywordToken::Let) => self.parse_let_statement(),
             Token::Keyword(KeywordToken::Var) => self.parse_let_statement(),

@@ -1,5 +1,6 @@
-use super::{Identifier, Node, Parser};
+use super::{Identifier, Parser, Statement};
 use crate::lexer::symbol::{DelimiterToken, Lexeme, LiteralToken, OperatorToken, Token};
+use crate::parser;
 use crate::{Error, ErrorKind};
 
 #[derive(Debug, Clone)]
@@ -18,10 +19,12 @@ pub enum Expression {
 }
 
 impl Parser {
-    pub fn parse_expression(&mut self) -> Result<Expression, Vec<Error>> {
+    pub fn parse_expression(&mut self) -> Result<Statement, Vec<Error>> {
         if let Ok(expr) = self.expression() {
-            self.ast.push(Node::Expression(expr.clone()));
-            Ok(expr)
+            // Push statement to AST
+            // self.ast
+            //     .push(parser::Statement::ExpressionStatement(expr.clone()));
+            Ok(parser::Statement::ExpressionStatement(expr))
         } else {
             self.errors.push(Error {
                 error_kind: ErrorKind::UnexpectedToken,
