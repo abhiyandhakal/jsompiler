@@ -27,6 +27,8 @@ pub enum Expression {
 #[derive(Debug, Clone)]
 pub enum Statement {
     LetStatement(LetStatement),
+    ReturnStatement(ReturnStatement),
+    BlockStatement(BlockStatement),
 }
 
 #[derive(Debug, Clone)]
@@ -45,7 +47,20 @@ pub struct Parser {
 #[derive(Debug, Clone)]
 pub struct LetStatement {
     pub token: Token,
+    pub name: Identifier,
     pub value: Box<Expression>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ReturnStatement {
+    pub token: Token,
+    pub value: Box<Expression>,
+}
+
+#[derive(Debug, Clone)]
+pub struct BlockStatement {
+    pub token: Token,
+    pub statements: Vec<Statement>,
 }
 
 impl Parser {
@@ -60,6 +75,7 @@ impl Parser {
 
     pub fn parse(&mut self) {
         while !self.is_at_end() {
+            // println!("Looping");
             match self.parse_statement() {
                 Ok(statement) => {
                     self.ast.push(Node::Statement(statement));
@@ -183,9 +199,17 @@ impl Parser {
 
     fn parse_statement(&mut self) -> Result<Statement, Vec<Error>> {
         match self.peek().token {
+            Token::Delimiter(DelimiterToken::Semicolon)
+            | Token::Delimiter(DelimiterToken::NewLine)
+            | Token::Delimiter(DelimiterToken::CloseBrace) => {
+                self.advance();
+                self.parse_statement()
+            }
             Token::Keyword(KeywordToken::Let) => self.parse_let_statement(),
             Token::Keyword(KeywordToken::Var) => self.parse_let_statement(),
             Token::Keyword(KeywordToken::Const) => self.parse_let_statement(),
+            Token::Keyword(KeywordToken::Return) => self.parse_return_statement(),
+            Token::Delimiter(DelimiterToken::OpenBrace) => self.parse_block_statement(),
             _ => Err(vec![Error {
                 error_kind: ErrorKind::UnexpectedToken,
                 message: "Expected statement".to_string(),
@@ -209,8 +233,10 @@ impl Parser {
         }
 
         if let Token::Identifier(_) = self.peek().token {
+            let token = self.previous().clone();
             self.advance();
             let name = self.previous().clone();
+
             if !self.match_token(&Token::Operator(OperatorToken::EqualTo)) {
                 return Err(vec![Error {
                     error_kind: ErrorKind::UnexpectedToken,
@@ -223,7 +249,11 @@ impl Parser {
             let value = Box::new(self.expression()?);
 
             Ok(Statement::LetStatement(LetStatement {
-                token: name.token,
+                token: token.token,
+                name: Identifier {
+                    token: name.clone(),
+                    value: name.text,
+                },
                 value,
             }))
         } else {
@@ -234,6 +264,48 @@ impl Parser {
                 pos: 2,
             }])
         }
+    }
+
+    fn parse_return_statement(&mut self) -> Result<Statement, Vec<Error>> {
+        if !self.match_token(&Token::Keyword(KeywordToken::Return)) {
+            return Err(vec![Error {
+                error_kind: ErrorKind::UnexpectedToken,
+                message: "Expected 'return'".to_string(),
+                line_number: 1,
+                pos: 2,
+            }]);
+        }
+
+        let value = Box::new(self.expression()?);
+
+        Ok(Statement::ReturnStatement(ReturnStatement {
+            token: Token::Keyword(KeywordToken::Return),
+            value,
+        }))
+    }
+
+    fn parse_block_statement(&mut self) -> Result<Statement, Vec<Error>> {
+        println!("Parsing block statement");
+        if !self.match_token(&Token::Delimiter(DelimiterToken::OpenBrace)) {
+            return Err(vec![Error {
+                error_kind: ErrorKind::UnexpectedToken,
+                message: "Expected '{'".to_string(),
+                line_number: 1,
+                pos: 2,
+            }]);
+        }
+
+        println!("{:?}", self.peek().token);
+        self.advance();
+        println!("{:?}", self.peek().token);
+        let mut statements = Vec::new();
+        let statement = self.parse_statement()?;
+        println!("Parsed statement: {:?}", statement);
+        statements.push(statement);
+        Ok(Statement::BlockStatement(BlockStatement {
+            token: Token::Delimiter(DelimiterToken::OpenBrace),
+            statements,
+        }))
     }
 
     fn match_operator(&mut self, operators: &[OperatorToken]) -> Option<OperatorToken> {
@@ -295,7 +367,10 @@ impl Parser {
     }
 
     fn is_at_end(&self) -> bool {
+        println!(
+            "Current: {}, Tokens: {:?}",
+            self.current, self.tokens[self.current].token
+        );
         self.tokens[self.current].token == Token::EOF
-            || self.tokens[self.current].token == Token::Delimiter(DelimiterToken::Semicolon)
     }
 }
