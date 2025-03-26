@@ -425,7 +425,7 @@ impl Lexer {
     }
 
     pub fn skip_whitespaces(&mut self) {
-        while self.get_current_char() == ' ' {
+        while self.get_current_char() == ' ' || self.get_current_char() == '\t' {
             self.advance();
         }
     }
