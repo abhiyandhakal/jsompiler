@@ -64,8 +64,7 @@ impl Parser {
     fn parse_statement(&mut self) -> Result<Statement, Vec<Error>> {
         match self.peek().token {
             Token::Delimiter(DelimiterToken::Semicolon)
-            | Token::Delimiter(DelimiterToken::NewLine)
-            | Token::Delimiter(DelimiterToken::CloseBrace) => {
+            | Token::Delimiter(DelimiterToken::NewLine) => {
                 self.advance();
                 self.parse_statement()
             }
@@ -131,6 +130,10 @@ impl Parser {
         &self.tokens[self.current - 1]
     }
 
+    fn next(&self) -> &Lexeme {
+        &self.tokens[self.current + 1]
+    }
+
     fn advance(&mut self) {
         if !self.is_at_end() {
             self.current += 1;
@@ -142,10 +145,6 @@ impl Parser {
     }
 
     fn is_at_end(&self) -> bool {
-        println!(
-            "Current: {}, Tokens: {:?}",
-            self.current, self.tokens[self.current].token
-        );
         self.tokens[self.current].token == Token::EOF
     }
 }
