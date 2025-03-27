@@ -3,13 +3,13 @@ use crate::{
     lexer::symbol::{KeywordToken, Token},
 };
 
-use super::{Parser, Statement, block_statement::BlockStatement, expression::Expression};
+use super::{Parser, Statement, expression::Expression};
 
 #[derive(Debug, Clone)]
 pub struct IfStatement {
     condition: Expression,
     consequence: Box<Statement>,
-    alternative: Option<BlockStatement>,
+    alternative: Option<Box<Statement>>,
 }
 
 impl Parser {
@@ -37,6 +37,23 @@ impl Parser {
                 }]);
             }
         };
+
+        if self.match_token(&Token::Keyword(KeywordToken::Else)) {
+            if self.peek().token == Token::Keyword(KeywordToken::If) {
+                let alternative = Box::new(self.parse_if_statement()?);
+                return Ok(Statement::IfStatement(IfStatement {
+                    condition: expression,
+                    consequence,
+                    alternative: Some(alternative),
+                }));
+            }
+            let alternative = Box::new(self.parse_block_statement()?);
+            return Ok(Statement::IfStatement(IfStatement {
+                condition: expression,
+                consequence,
+                alternative: Some(alternative),
+            }));
+        }
 
         Ok(Statement::IfStatement(IfStatement {
             condition: expression,
