@@ -1,5 +1,6 @@
 mod block_statement;
 mod expression;
+mod function_statement;
 mod if_statement;
 mod let_statement;
 mod return_statement;
@@ -7,6 +8,7 @@ mod while_statement;
 
 use block_statement::BlockStatement;
 use expression::Expression;
+use function_statement::FunctionStatement;
 use if_statement::IfStatement;
 use let_statement::LetStatement;
 use return_statement::ReturnStatement;
@@ -31,6 +33,7 @@ pub enum Statement {
     BlockStatement(BlockStatement),
     IfStatement(IfStatement),
     WhileStatement(WhileStatement),
+    FunctionStatement(FunctionStatement),
 }
 
 #[derive(Debug, Clone)]
@@ -86,6 +89,7 @@ impl Parser {
             Token::Keyword(KeywordToken::Return) => self.parse_return_statement(),
             Token::Keyword(KeywordToken::If) => self.parse_if_statement(),
             Token::Keyword(KeywordToken::While) => self.parse_while_statement(),
+            Token::Keyword(KeywordToken::Function) => self.parse_function_statement(),
             Token::Delimiter(DelimiterToken::OpenBrace) => self.parse_block_statement(),
             Token::Delimiter(DelimiterToken::OpenParen) => self.parenthesis_expression(),
             _ => Err(vec![Error {
