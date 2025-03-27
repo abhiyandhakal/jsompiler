@@ -19,6 +19,21 @@ pub enum Expression {
 }
 
 impl Parser {
+    pub fn parenthesis_expression(&mut self) -> Result<Statement, Vec<Error>> {
+        // (5+4)
+        self.advance(); // Consuming open parenthesis
+        let exp = self.parse_expression();
+        if self.match_token(&Token::Delimiter(DelimiterToken::CloseParen)) {
+            exp
+        } else {
+            Err(vec![Error {
+                error_kind: ErrorKind::UnexpectedToken,
+                message: "Expected ')'".to_string(),
+                line_number: 1,
+                pos: 2,
+            }])
+        }
+    }
     pub fn parse_expression(&mut self) -> Result<Statement, Vec<Error>> {
         if let Ok(expr) = self.expression() {
             // Push statement to AST
@@ -37,7 +52,7 @@ impl Parser {
     }
 
     pub fn expression(&mut self) -> Result<Expression, Vec<Error>> {
-        self.term() // Start from highest precedence binary operations
+        self.comparison() // Start from highest precedence binary operations
     }
 
     fn unary(&mut self) -> Result<Expression, Vec<Error>> {
@@ -119,6 +134,34 @@ impl Parser {
 
         while let Some(op) = self.match_operator(&[OperatorToken::Plus, OperatorToken::Minus]) {
             let right = self.factor()?; // Parse the second operand
+            left = Expression::Binary {
+                left: Box::new(left),
+                op: Lexeme {
+                    token: Token::Operator(op.clone()),
+                    text: op.to_string(),
+                    len: 1,
+                },
+                right: Box::new(right),
+            };
+        }
+
+        Ok(left)
+    }
+
+    fn comparison(&mut self) -> Result<Expression, Vec<Error>> {
+        let mut left = self.term()?; // Parse arithmetic first
+
+        while let Some(op) = self.match_operator(&[
+            OperatorToken::NotEqual,
+            OperatorToken::DoubleEqual,
+            OperatorToken::StrictEqual,
+            OperatorToken::StrictNotEqual,
+            OperatorToken::Less,
+            OperatorToken::LessEqual,
+            OperatorToken::Greater,
+            OperatorToken::GreaterEqual,
+        ]) {
+            let right = self.term()?; // Parse the right-hand side
             left = Expression::Binary {
                 left: Box::new(left),
                 op: Lexeme {
