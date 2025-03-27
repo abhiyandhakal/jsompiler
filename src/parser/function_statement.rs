@@ -6,10 +6,10 @@ use crate::{Error, ErrorKind};
 pub struct FunctionStatement {
     pub name: Identifier,
     pub parameters: Vec<Identifier>,
-    pub body: Box<Statement>,
+    pub body: Box<Option<Statement>>,
 }
 impl Parser {
-    pub fn parse_function_statement(&mut self) -> Result<Statement, Vec<Error>> {
+    pub fn parse_function_statement(&mut self) -> Result<Option<Statement>, Vec<Error>> {
         // Expect `function` keyword
         if !self.match_token(&Token::Keyword(KeywordToken::Function)) {
             return Err(vec![Error {
@@ -86,10 +86,10 @@ impl Parser {
         let body = self.parse_block_statement()?;
 
         // Return FunctionStatement node
-        Ok(Statement::FunctionStatement(FunctionStatement {
+        Ok(Some(Statement::FunctionStatement(FunctionStatement {
             name,
             parameters,
             body: Box::new(body),
-        }))
+        })))
     }
 }
