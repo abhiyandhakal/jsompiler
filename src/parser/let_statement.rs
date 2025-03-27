@@ -11,7 +11,7 @@ pub struct LetStatement {
 }
 
 impl Parser {
-    pub fn parse_let_statement(&mut self) -> Result<Statement, Vec<Error>> {
+    pub fn parse_let_statement(&mut self) -> Result<Option<Statement>, Vec<Error>> {
         if !self.match_token(&Token::Keyword(KeywordToken::Let))
             && !self.match_token(&Token::Keyword(KeywordToken::Var))
             && !self.match_token(&Token::Keyword(KeywordToken::Const))
@@ -24,7 +24,7 @@ impl Parser {
             }]);
         }
 
-        if let Token::Identifier(c) = &self.peek().token {
+        if let Token::Identifier(_) = &self.peek().token {
             let token = self.previous().clone();
             self.advance();
             let name = self.previous().clone();
@@ -40,14 +40,14 @@ impl Parser {
 
             let value = Box::new(self.expression()?);
 
-            Ok(Statement::LetStatement(LetStatement {
+            Ok(Some(Statement::LetStatement(LetStatement {
                 token: token.token,
                 name: Identifier {
                     token: name.clone(),
                     value: name.text,
                 },
                 value,
-            }))
+            })))
         } else {
             Err(vec![Error {
                 error_kind: ErrorKind::UnexpectedToken,

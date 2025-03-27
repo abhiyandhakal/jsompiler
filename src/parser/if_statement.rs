@@ -8,12 +8,12 @@ use super::{Parser, Statement, expression::Expression};
 #[derive(Debug, Clone)]
 pub struct IfStatement {
     condition: Expression,
-    consequence: Box<Statement>,
-    alternative: Option<Box<Statement>>,
+    consequence: Box<Option<Statement>>,
+    alternative: Option<Box<Option<Statement>>>,
 }
 
 impl Parser {
-    pub fn parse_if_statement(&mut self) -> Result<Statement, Vec<Error>> {
+    pub fn parse_if_statement(&mut self) -> Result<Option<Statement>, Vec<Error>> {
         if !self.match_token(&Token::Keyword(KeywordToken::If)) {
             return Err(vec![Error {
                 error_kind: ErrorKind::UnexpectedToken,
@@ -27,7 +27,7 @@ impl Parser {
         let consequence = Box::new(self.parse_block_statement()?);
         // Decode expression from statement
         let expression = match value {
-            Statement::ExpressionStatement(expr) => expr,
+            Some(Statement::ExpressionStatement(expr)) => expr,
             _ => {
                 return Err(vec![Error {
                     error_kind: ErrorKind::UnexpectedToken,
@@ -41,24 +41,24 @@ impl Parser {
         if self.match_token(&Token::Keyword(KeywordToken::Else)) {
             if self.peek().token == Token::Keyword(KeywordToken::If) {
                 let alternative = Box::new(self.parse_if_statement()?);
-                return Ok(Statement::IfStatement(IfStatement {
+                return Ok(Some(Statement::IfStatement(IfStatement {
                     condition: expression,
                     consequence,
                     alternative: Some(alternative),
-                }));
+                })));
             }
             let alternative = Box::new(self.parse_block_statement()?);
-            return Ok(Statement::IfStatement(IfStatement {
+            return Ok(Some(Statement::IfStatement(IfStatement {
                 condition: expression,
                 consequence,
                 alternative: Some(alternative),
-            }));
+            })));
         }
 
-        Ok(Statement::IfStatement(IfStatement {
+        Ok(Some(Statement::IfStatement(IfStatement {
             condition: expression,
             consequence,
             alternative: None,
-        }))
+        })))
     }
 }

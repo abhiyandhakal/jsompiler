@@ -55,19 +55,30 @@ impl Parser {
 
     pub fn parse(&mut self) {
         while !self.is_at_end() {
+            println!("peeking: {:?}", self.peek().token);
+            match &self.peek().token {
+                Token::Delimiter(DelimiterToken::Semicolon)
+                | Token::Delimiter(DelimiterToken::NewLine)
+                | Token::Delimiter(DelimiterToken::CloseBrace) => {
+                    self.advance();
+                }
+                Token::EOF => break,
+                _ => {}
+            }
             match self.parse_statement() {
-                Ok(statement) => {
+                Ok(Some(statement)) => {
                     self.ast.push(Node::Statement(statement));
                 }
                 Err(errors) => {
                     self.errors.extend(errors);
                     break;
                 }
+                _ => {}
             }
         }
     }
 
-    fn parse_statement(&mut self) -> Result<Statement, Vec<Error>> {
+    fn parse_statement(&mut self) -> Result<Option<Statement>, Vec<Error>> {
         match &self.peek().token {
             Token::Delimiter(DelimiterToken::Semicolon)
             | Token::Delimiter(DelimiterToken::NewLine) => {

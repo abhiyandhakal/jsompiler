@@ -203,7 +203,7 @@ impl Lexer {
                 )));
             }
             '/' => {
-                if self.start + 1 <= self.source.len() {
+                if self.start < self.source.len() {
                     let next_char = self.source[self.start + 1];
                     match next_char {
                         // Single Line Comment

@@ -19,7 +19,7 @@ pub enum Expression {
 }
 
 impl Parser {
-    pub fn parenthesis_expression(&mut self) -> Result<Statement, Vec<Error>> {
+    pub fn parenthesis_expression(&mut self) -> Result<Option<Statement>, Vec<Error>> {
         // (5+4)
         self.advance(); // Consuming open parenthesis
         let exp = self.parse_expression();
@@ -34,12 +34,12 @@ impl Parser {
             }])
         }
     }
-    pub fn parse_expression(&mut self) -> Result<Statement, Vec<Error>> {
+    pub fn parse_expression(&mut self) -> Result<Option<Statement>, Vec<Error>> {
         if let Ok(expr) = self.expression() {
             // Push statement to AST
             // self.ast
             //     .push(parser::Statement::ExpressionStatement(expr.clone()));
-            Ok(parser::Statement::ExpressionStatement(expr))
+            Ok(Some(parser::Statement::ExpressionStatement(expr)))
         } else {
             self.errors.push(Error {
                 error_kind: ErrorKind::UnexpectedToken,

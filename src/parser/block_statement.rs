@@ -8,11 +8,11 @@ use super::{Parser, Statement};
 #[derive(Debug, Clone)]
 pub struct BlockStatement {
     pub token: Token,
-    pub statements: Vec<Statement>,
+    pub statements: Vec<Option<Statement>>,
 }
 
 impl Parser {
-    pub fn parse_block_statement(&mut self) -> Result<Statement, Vec<Error>> {
+    pub fn parse_block_statement(&mut self) -> Result<Option<Statement>, Vec<Error>> {
         self.advance();
         let mut statements = Vec::new();
         while !self.is_at_end() {
@@ -49,9 +49,9 @@ impl Parser {
                 break;
             }
         }
-        Ok(Statement::BlockStatement(BlockStatement {
+        Ok(Some(Statement::BlockStatement(BlockStatement {
             token: Token::Delimiter(DelimiterToken::OpenBrace),
             statements,
-        }))
+        })))
     }
 }
