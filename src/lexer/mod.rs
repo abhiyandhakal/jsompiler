@@ -30,9 +30,9 @@ impl Lexer {
 
     fn get_current_char(&self) -> char {
         if self.is_at_end() {
-            return '\0';
+            '\0'
         } else {
-            return self.source[self.current];
+            self.source[self.current]
         }
     }
 
@@ -43,9 +43,9 @@ impl Lexer {
         }
 
         if self.is_at_end() {
-            return '\0';
+            '\0'
         } else {
-            return self.source[self.current - 1];
+            self.source[self.current - 1]
         }
     }
 
@@ -66,10 +66,10 @@ impl Lexer {
             // New Line
             '\n' => {
                 // self.advance();
-                return Ok(Some(lexeme(
+                Ok(Some(lexeme(
                     "\n".to_string(),
                     Token::Delimiter(DelimiterToken::NewLine),
-                )));
+                )))
             }
             // Numbers
             '0'..='9' => {
@@ -91,10 +91,10 @@ impl Lexer {
                     )));
                 }
 
-                return Ok(Some(lexeme(
+                Ok(Some(lexeme(
                     token_string.clone(),
                     Token::Literal(LiteralToken::Number(token_string)),
-                )));
+                )))
             }
             // Keywords and identifiers
             'a'..='z' | 'A'..='Z' | '_' | '$' => {
@@ -108,15 +108,15 @@ impl Lexer {
                     .iter()
                     .collect::<String>();
 
-                let keyword = SYMBOLS.iter().find(|f| f.0.to_string() == token_string);
+                let keyword = SYMBOLS.iter().find(|f| *f.0 == token_string);
                 if let Some(keyword) = keyword {
                     return Ok(Some(keyword.1.clone()));
                 }
 
-                return Ok(Some(lexeme(
+                Ok(Some(lexeme(
                     token_string.clone(),
                     Token::Identifier(token_string),
-                )));
+                )))
             }
             '`' => {
                 while self.get_current_char() != '`' {
@@ -131,14 +131,14 @@ impl Lexer {
                     self.advance();
                 }
                 self.advance(); // consume the closing quote
-                return Ok(Some(lexeme(
+                Ok(Some(lexeme(
                     self.source[self.start..self.current].iter().collect(),
                     Token::Literal(LiteralToken::String(symbol::StringLiteral::Template(
                         self.source[self.start + 1..self.current - 1]
                             .iter()
                             .collect(),
                     ))),
-                )));
+                )))
             }
             '"' => {
                 while self.get_current_char() != '"' {
@@ -162,14 +162,14 @@ impl Lexer {
                     self.advance();
                 }
                 self.advance(); // consume the closing quote
-                return Ok(Some(lexeme(
+                Ok(Some(lexeme(
                     self.source[self.start..self.current].iter().collect(),
                     Token::Literal(LiteralToken::String(symbol::StringLiteral::Regular(
                         self.source[self.start + 1..self.current - 1]
                             .iter()
                             .collect(),
                     ))),
-                )));
+                )))
             }
             '\'' => {
                 while self.get_current_char() != '\'' {
@@ -193,14 +193,14 @@ impl Lexer {
                     self.advance();
                 }
                 self.advance(); // consume the closing quote
-                return Ok(Some(lexeme(
+                Ok(Some(lexeme(
                     self.source[self.start..self.current].iter().collect(),
                     Token::Literal(LiteralToken::String(symbol::StringLiteral::Regular(
                         self.source[self.start + 1..self.current - 1]
                             .iter()
                             .collect(),
                     ))),
-                )));
+                )))
             }
             '/' => {
                 if self.start < self.source.len() {
@@ -236,7 +236,7 @@ impl Lexer {
                                 if self.source[self.current..=self.current + 1]
                                     .iter()
                                     .collect::<String>()
-                                    == "*/".to_string()
+                                    == *"*/"
                                 {
                                     self.advance();
                                     self.advance();
@@ -327,7 +327,7 @@ impl Lexer {
                                         }
                                     }
 
-                                    if let None = longest_match {
+                                    if longest_match.is_none() {
                                         return Err(Error {
                                             error_kind: ErrorKind::LexerError,
                                             message: "Unexpected character".to_string(),
@@ -348,7 +348,7 @@ impl Lexer {
                     }
                 }
 
-                return Ok(None);
+                Ok(None)
             }
             _ => {
                 if !self.is_at_end() {
@@ -369,7 +369,7 @@ impl Lexer {
                         }
                     }
 
-                    if let None = longest_match {
+                    if longest_match.is_none() {
                         return Err(Error {
                             error_kind: ErrorKind::LexerError,
                             message: "Unexpected character".to_string(),
@@ -380,11 +380,11 @@ impl Lexer {
                         return Ok(longest_match);
                     }
                 }
-                return Ok(Some(symbol::Lexeme {
+                Ok(Some(symbol::Lexeme {
                     text: "EOF".to_string(),
                     len: 0,
                     token: symbol::Token::EOF,
-                }));
+                }))
             }
         }
     }

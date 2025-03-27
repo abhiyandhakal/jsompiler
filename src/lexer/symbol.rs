@@ -212,49 +212,51 @@ lazy_static! {
     };
 }
 
-impl ToString for OperatorToken {
-    fn to_string(&self) -> String {
-        match self {
+impl std::fmt::Display for OperatorToken {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let symbol = match self {
             // Arithmetic
-            OperatorToken::Plus => "+".to_string(),
-            OperatorToken::Minus => "-".to_string(),
-            OperatorToken::Asterisk => "*".to_string(),
-            OperatorToken::Slash => "/".to_string(),
-            OperatorToken::Percent => "%".to_string(),
+            OperatorToken::Plus => "+",
+            OperatorToken::Minus => "-",
+            OperatorToken::Asterisk => "*",
+            OperatorToken::Slash => "/",
+            OperatorToken::Percent => "%",
 
             // Assignment
-            OperatorToken::EqualTo => "=".to_string(),
+            OperatorToken::EqualTo => "=",
 
             // Comparison
-            OperatorToken::DoubleEqual => "==".to_string(),
-            OperatorToken::StrictEqual => "===".to_string(),
-            OperatorToken::NotEqual => "!=".to_string(),
-            OperatorToken::StrictNotEqual => "!==".to_string(),
-            OperatorToken::Greater => ">".to_string(),
-            OperatorToken::Less => "<".to_string(),
-            OperatorToken::GreaterEqual => ">=".to_string(),
-            OperatorToken::LessEqual => "<=".to_string(),
+            OperatorToken::DoubleEqual => "==",
+            OperatorToken::StrictEqual => "===",
+            OperatorToken::NotEqual => "!=",
+            OperatorToken::StrictNotEqual => "!==",
+            OperatorToken::Greater => ">",
+            OperatorToken::Less => "<",
+            OperatorToken::GreaterEqual => ">=",
+            OperatorToken::LessEqual => "<=",
 
             // Logical
-            OperatorToken::And => "&&".to_string(),
-            OperatorToken::Or => "||".to_string(),
-            OperatorToken::Not => "!".to_string(),
+            OperatorToken::And => "&&",
+            OperatorToken::Or => "||",
+            OperatorToken::Not => "!",
 
             // Other
-            OperatorToken::Arrow => "=>".to_string(),
+            OperatorToken::Arrow => "=>",
 
             // Additional Operators
-            OperatorToken::PlusEqual => "+=".to_string(),
-            OperatorToken::MinusEqual => "-=".to_string(),
-            OperatorToken::AsteriskEqual => "*=".to_string(),
-            OperatorToken::SlashEqual => "/=".to_string(),
-            OperatorToken::PercentEqual => "%=".to_string(),
-            OperatorToken::Increment => "++".to_string(),
-            OperatorToken::Decrement => "--".to_string(),
-            OperatorToken::QuestionMark => "?".to_string(),
-            OperatorToken::Colon => ":".to_string(),
-            OperatorToken::NullishCoalesce => "??".to_string(),
-            OperatorToken::OptionalChain => "?. ".to_string(),
-        }
+            OperatorToken::PlusEqual => "+=",
+            OperatorToken::MinusEqual => "-=",
+            OperatorToken::AsteriskEqual => "*=",
+            OperatorToken::SlashEqual => "/=",
+            OperatorToken::PercentEqual => "%=",
+            OperatorToken::Increment => "++",
+            OperatorToken::Decrement => "--",
+            OperatorToken::QuestionMark => "?",
+            OperatorToken::Colon => ":",
+            OperatorToken::NullishCoalesce => "??",
+            OperatorToken::OptionalChain => "?.",
+        };
+
+        write!(f, "{}", symbol)
     }
 }

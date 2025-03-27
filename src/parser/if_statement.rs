@@ -7,9 +7,9 @@ use super::{Parser, Statement, expression::Expression};
 
 #[derive(Debug, Clone)]
 pub struct IfStatement {
-    condition: Expression,
-    consequence: Box<Option<Statement>>,
-    alternative: Option<Box<Option<Statement>>>,
+    pub condition: Expression,
+    pub consequence: Box<Option<Statement>>,
+    pub alternative: Option<Box<Option<Statement>>>,
 }
 
 impl Parser {

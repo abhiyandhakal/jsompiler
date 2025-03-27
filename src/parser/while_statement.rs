@@ -4,8 +4,8 @@ use crate::{Error, ErrorKind};
 
 #[derive(Debug, Clone)]
 pub struct WhileStatement {
-    condition: Expression,
-    consequence: Box<Option<Statement>>,
+    pub condition: Expression,
+    pub consequence: Box<Option<Statement>>,
 }
 
 impl Parser {
