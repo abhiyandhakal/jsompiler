@@ -59,13 +59,16 @@ impl Parser {
                 Ok(statement) => {
                     self.ast.push(Node::Statement(statement));
                 }
-                Err(errors) => self.errors.extend(errors),
+                Err(errors) => {
+                    self.errors.extend(errors);
+                    break;
+                }
             }
         }
     }
 
     fn parse_statement(&mut self) -> Result<Statement, Vec<Error>> {
-        match self.peek().token {
+        match &self.peek().token {
             Token::Delimiter(DelimiterToken::Semicolon)
             | Token::Delimiter(DelimiterToken::NewLine) => {
                 self.advance();
@@ -74,9 +77,9 @@ impl Parser {
             Token::Identifier(_) | Token::Literal(_) | Token::Operator(_) => {
                 self.parse_expression()
             }
-            Token::Keyword(KeywordToken::Let) => self.parse_let_statement(),
-            Token::Keyword(KeywordToken::Var) => self.parse_let_statement(),
-            Token::Keyword(KeywordToken::Const) => self.parse_let_statement(),
+            Token::Keyword(KeywordToken::Let)
+            | Token::Keyword(KeywordToken::Var)
+            | Token::Keyword(KeywordToken::Const) => self.parse_let_statement(),
             Token::Keyword(KeywordToken::Return) => self.parse_return_statement(),
             Token::Keyword(KeywordToken::If) => self.parse_if_statement(),
             Token::Delimiter(DelimiterToken::OpenBrace) => self.parse_block_statement(),
