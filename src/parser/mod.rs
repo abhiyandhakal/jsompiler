@@ -3,12 +3,14 @@ mod expression;
 mod if_statement;
 mod let_statement;
 mod return_statement;
+mod while_statement;
 
 use block_statement::BlockStatement;
 use expression::Expression;
 use if_statement::IfStatement;
 use let_statement::LetStatement;
 use return_statement::ReturnStatement;
+use while_statement::WhileStatement;
 
 use crate::lexer::symbol::{
     DelimiterToken, KeywordToken, Lexeme, LiteralToken, OperatorToken, Token,
@@ -28,6 +30,7 @@ pub enum Statement {
     ExpressionStatement(Expression),
     BlockStatement(BlockStatement),
     IfStatement(IfStatement),
+    WhileStatement(WhileStatement),
 }
 
 #[derive(Debug, Clone)]
@@ -82,6 +85,7 @@ impl Parser {
             | Token::Keyword(KeywordToken::Const) => self.parse_let_statement(),
             Token::Keyword(KeywordToken::Return) => self.parse_return_statement(),
             Token::Keyword(KeywordToken::If) => self.parse_if_statement(),
+            Token::Keyword(KeywordToken::While) => self.parse_while_statement(),
             Token::Delimiter(DelimiterToken::OpenBrace) => self.parse_block_statement(),
             Token::Delimiter(DelimiterToken::OpenParen) => self.parenthesis_expression(),
             _ => Err(vec![Error {
