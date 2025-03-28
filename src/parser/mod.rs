@@ -1,3 +1,4 @@
+mod assignment_statement;
 mod block_statement;
 mod expression;
 mod function_statement;
@@ -6,6 +7,7 @@ mod let_statement;
 mod return_statement;
 mod while_statement;
 
+use assignment_statement::AssignmentStatement;
 use block_statement::BlockStatement;
 use expression::Expression;
 use function_statement::FunctionStatement;
@@ -34,6 +36,7 @@ pub enum Statement {
     IfStatement(IfStatement),
     WhileStatement(WhileStatement),
     FunctionStatement(FunctionStatement),
+    AssignmentStatement(AssignmentStatement),
 }
 
 #[derive(Debug, Clone)]
@@ -91,8 +94,13 @@ impl Parser {
                 self.advance();
                 self.parse_statement()
             }
-            Token::Identifier(_) | Token::Literal(_) | Token::Operator(_) => {
-                self.parse_expression()
+            Token::Literal(_) | Token::Operator(_) => self.parse_expression(),
+            Token::Identifier(_) => {
+                if self.next().token == Token::Operator(OperatorToken::EqualTo) {
+                    self.parse_assignment_statement()
+                } else {
+                    self.parse_expression()
+                }
             }
             Token::Keyword(KeywordToken::Let)
             | Token::Keyword(KeywordToken::Var)
