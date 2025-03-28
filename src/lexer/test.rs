@@ -1,6 +1,8 @@
+#[allow(unused_imports)]
 use crate::lexer::symbol::{
     DelimiterToken, KeywordToken, LiteralToken, OperatorToken, StringLiteral,
 };
+#[allow(unused_imports)]
 use crate::lexer::{Lexer, Token};
 
 #[test]
@@ -8,7 +10,7 @@ fn test_lexer_var_declaration() {
     let input = "let x = 5;";
     let mut lexer = Lexer::new(input.to_string());
     lexer.scan_all_tokens();
-    assert!(lexer.errors.is_empty());
+    assert_eq!(lexer.errors, vec![]);
     assert_eq!(
         lexer
             .tokens
@@ -31,7 +33,7 @@ fn test_lexer_var_declaration_no_semicolon() {
     let input = "let x = 5";
     let mut lexer = Lexer::new(input.to_string());
     lexer.scan_all_tokens();
-    assert!(lexer.errors.is_empty());
+    assert_eq!(lexer.errors, vec![]);
     assert_eq!(
         lexer
             .tokens
@@ -53,7 +55,7 @@ fn test_lexer_string_concat() {
     let input = "let msg = \"hello\" + \" \" + \"world\";";
     let mut lexer = Lexer::new(input.to_string());
     lexer.scan_all_tokens();
-    assert!(lexer.errors.is_empty());
+    assert_eq!(lexer.errors, vec![]);
     assert_eq!(
         lexer
             .tokens
@@ -86,7 +88,7 @@ fn test_lexer_arithmetic() {
     let input = "let result = (5 * 10 + 2) / 4 - 3;";
     let mut lexer = Lexer::new(input.to_string());
     lexer.scan_all_tokens();
-    assert!(lexer.errors.is_empty());
+    assert_eq!(lexer.errors, vec![]);
     assert_eq!(
         lexer
             .tokens
@@ -119,15 +121,15 @@ fn test_lexer_invalid_input() {
     let input = "let @invalid = 5;";
     let mut lexer = Lexer::new(input.to_string());
     lexer.scan_all_tokens();
-    assert!(!lexer.errors.is_empty());
+    assert_ne!(lexer.errors, vec![]);
 
     let input = "let x = \"unclosed string;";
     let mut lexer = Lexer::new(input.to_string());
     lexer.scan_all_tokens();
-    assert!(!lexer.errors.is_empty());
+    assert_ne!(lexer.errors, vec![]);
 
     let input = "let x = 5.5.5;";
     let mut lexer = Lexer::new(input.to_string());
     lexer.scan_all_tokens();
-    assert!(!lexer.errors.is_empty());
+    assert_ne!(lexer.errors, vec![]);
 }

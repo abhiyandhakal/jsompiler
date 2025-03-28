@@ -9,7 +9,7 @@ pub enum ErrorKind {
     UnexpectedToken,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Error {
     pub error_kind: ErrorKind,
     pub message: String,

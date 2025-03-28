@@ -25,12 +25,12 @@ impl Lexer {
         }
     }
 
-    fn is_at_end(&self) -> bool {
-        self.current >= self.source.len()
+    fn is_beyond_end(&self) -> bool {
+        self.current > self.source.len()
     }
 
     fn get_current_char(&self) -> char {
-        if self.is_at_end() {
+        if self.current >= self.source.len() {
             '\0'
         } else {
             self.source[self.current]
@@ -43,7 +43,7 @@ impl Lexer {
             self.line_number += 1;
         }
 
-        if self.is_at_end() {
+        if self.is_beyond_end() {
             '\0'
         } else {
             self.source[self.current - 1]
@@ -51,7 +51,7 @@ impl Lexer {
     }
 
     fn scan_token(&mut self) -> Result<Option<Lexeme>, crate::Error> {
-        if self.is_at_end() {
+        if self.is_beyond_end() {
             return Ok(Some(symbol::Lexeme {
                 text: "EOF".to_string(),
                 len: 0,
@@ -262,7 +262,7 @@ impl Lexer {
                             self.advance();
                         },
                         // Regex and other operators
-                        _ => {
+                        c => {
                             let last_token = self.tokens.last();
                             let is_else;
                             if let Some(last_token) = last_token {
@@ -310,7 +310,7 @@ impl Lexer {
                                 is_else = true;
                             }
                             if is_else {
-                                if !self.is_at_end() {
+                                if !self.is_beyond_end() {
                                     let mut longest_match = None;
 
                                     for len in (1..=3).rev() {
@@ -329,9 +329,36 @@ impl Lexer {
                                     }
 
                                     if longest_match.is_none() {
+                                        if c == '\n' {
+                                            return Ok(Some(symbol::Lexeme {
+                                                text: "\n".to_string(),
+                                                len: 1,
+                                                token: symbol::Token::Delimiter(
+                                                    DelimiterToken::NewLine,
+                                                ),
+                                            }));
+                                        }
+                                        if c == ';' {
+                                            return Ok(Some(symbol::Lexeme {
+                                                text: ";".to_string(),
+                                                len: 1,
+                                                token: symbol::Token::Delimiter(
+                                                    DelimiterToken::Semicolon,
+                                                ),
+                                            }));
+                                        }
+                                        if c == '\0' {
+                                            return Ok(Some(symbol::Lexeme {
+                                                text: "\0".to_string(),
+                                                len: 0,
+                                                token: symbol::Token::EOF,
+                                            }));
+                                        }
+
                                         return Err(Error {
                                             error_kind: ErrorKind::LexerError,
-                                            message: "Unexpected character".to_string(),
+                                            message: format!("Unexpected character: {c}")
+                                                .to_string(),
                                             line_number: self.line_number,
                                             pos: self.start,
                                         });
@@ -351,8 +378,8 @@ impl Lexer {
 
                 Ok(None)
             }
-            _ => {
-                if !self.is_at_end() {
+            c => {
+                if !self.is_beyond_end() {
                     let mut longest_match = None;
 
                     for len in (1..=3).rev() {
@@ -371,9 +398,31 @@ impl Lexer {
                     }
 
                     if longest_match.is_none() {
+                        if c == '\n' {
+                            return Ok(Some(symbol::Lexeme {
+                                text: "\n".to_string(),
+                                len: 1,
+                                token: symbol::Token::Delimiter(DelimiterToken::NewLine),
+                            }));
+                        }
+                        if c == ';' {
+                            return Ok(Some(symbol::Lexeme {
+                                text: ";".to_string(),
+                                len: 1,
+                                token: symbol::Token::Delimiter(DelimiterToken::Semicolon),
+                            }));
+                        }
+                        if c == '\0' {
+                            return Ok(Some(symbol::Lexeme {
+                                text: "\0".to_string(),
+                                len: 0,
+                                token: symbol::Token::EOF,
+                            }));
+                        }
+
                         return Err(Error {
                             error_kind: ErrorKind::LexerError,
-                            message: "Unexpected character".to_string(),
+                            message: format!("Unexpected character: {c}").to_string(),
                             line_number: self.line_number,
                             pos: self.start,
                         });
