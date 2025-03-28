@@ -16,6 +16,10 @@ pub enum Expression {
         op: Lexeme,
         right: Box<Expression>,
     },
+    FunctionCall {
+        name: Identifier,
+        args: Vec<Expression>,
+    },
 }
 
 impl Parser {
@@ -91,6 +95,10 @@ impl Parser {
 
         if let Token::Identifier(_) = self.peek().token {
             self.advance();
+            // Check if it's a function call
+            if self.peek().token == Token::Delimiter(DelimiterToken::OpenParen) {
+                return self.parse_function_call(self.previous().clone());
+            }
             let identifier = self.previous().clone();
             return Ok(Expression::Identifier(Identifier {
                 token: identifier.clone(),
@@ -174,5 +182,49 @@ impl Parser {
         }
 
         Ok(left)
+    }
+
+    fn parse_function_call(&mut self, name: Lexeme) -> Result<Expression, Vec<Error>> {
+        println!("Parsing function call");
+        self.advance(); // Consume open parenthesis
+
+        let mut args = Vec::new();
+
+        // Parse arguments
+        while self.peek().token != Token::Delimiter(DelimiterToken::CloseParen) {
+            let lexeme = self.peek().clone();
+            if let Token::Identifier(_) = lexeme.token {
+                args.push(Expression::Identifier(Identifier {
+                    token: lexeme.clone(),
+                    value: lexeme.text.clone(),
+                }));
+                self.advance();
+            } else if let Token::Literal(_) = lexeme.token {
+                if let Some(literal) = self.match_literal() {
+                    args.push(Expression::Literal(literal));
+                }
+            }
+            if !self.match_token(&Token::Delimiter(DelimiterToken::Comma)) {
+                break; // Stop if there's no comma
+            }
+        }
+
+        // Expect ')'
+        if !self.match_token(&Token::Delimiter(DelimiterToken::CloseParen)) {
+            return Err(vec![Error {
+                error_kind: ErrorKind::UnexpectedToken,
+                message: "Expected ')' after parameters".to_string(),
+                line_number: 1,
+                pos: 2,
+            }]);
+        }
+
+        Ok(Expression::FunctionCall {
+            name: Identifier {
+                token: name.clone(),
+                value: name.text.clone(),
+            },
+            args,
+        })
     }
 }
