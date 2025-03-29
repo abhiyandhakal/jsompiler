@@ -162,3 +162,37 @@ fn test_fn() {
         ]
     );
 }
+
+#[test]
+fn test_arrow_fn() {
+    let input = r#"const test = (a, b) => {
+            //
+        }"#;
+    let mut lexer = Lexer::new(input.to_string());
+    lexer.scan_all_tokens();
+    assert_eq!(lexer.errors, vec![]);
+    assert_eq!(
+        lexer
+            .tokens
+            .iter()
+            .map(|l| l.token.clone())
+            .collect::<Vec<_>>(),
+        vec![
+            Token::Keyword(KeywordToken::Const),
+            Token::Identifier("test".to_string()),
+            Token::Operator(OperatorToken::EqualTo),
+            Token::Delimiter(DelimiterToken::OpenParen),
+            Token::Identifier("a".to_string()),
+            Token::Delimiter(DelimiterToken::Comma),
+            Token::Identifier("b".to_string()),
+            Token::Delimiter(DelimiterToken::CloseParen),
+            Token::Operator(OperatorToken::Arrow),
+            Token::Delimiter(DelimiterToken::OpenBrace),
+            Token::Delimiter(DelimiterToken::NewLine),
+            Token::Comment(CommentToken::Line("".to_string())),
+            Token::Delimiter(DelimiterToken::NewLine),
+            Token::Delimiter(DelimiterToken::CloseBrace),
+            Token::EOF
+        ]
+    );
+}
