@@ -1,7 +1,6 @@
 use super::{Identifier, Parser, Statement};
-use crate::lexer::symbol::{DelimiterToken, Lexeme, LiteralToken, OperatorToken, Token};
-use crate::parser;
 use crate::{Error, ErrorKind};
+use jsompiler_lexer::symbol::{DelimiterToken, Lexeme, LiteralToken, OperatorToken, Token};
 
 #[derive(Debug, Clone)]
 pub enum Expression {
@@ -43,7 +42,7 @@ impl Parser {
             // Push statement to AST
             // self.ast
             //     .push(parser::Statement::ExpressionStatement(expr.clone()));
-            Ok(Some(parser::Statement::ExpressionStatement(expr)))
+            Ok(Some(Statement::ExpressionStatement(expr)))
         } else {
             self.errors.push(Error {
                 error_kind: ErrorKind::UnexpectedToken,

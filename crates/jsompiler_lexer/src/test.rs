@@ -1,9 +1,9 @@
 #[allow(unused_imports)]
-use crate::lexer::symbol::{
+use super::symbol::{
     CommentToken, DelimiterToken, KeywordToken, LiteralToken, OperatorToken, StringLiteral,
 };
 #[allow(unused_imports)]
-use crate::lexer::{Lexer, Token};
+use super::{Lexer, Token};
 
 #[test]
 fn test_lexer_var_declaration() {
@@ -158,6 +158,67 @@ fn test_fn() {
             Token::Comment(CommentToken::Line("".to_string())),
             Token::Delimiter(DelimiterToken::NewLine),
             Token::Delimiter(DelimiterToken::CloseBrace),
+            Token::EOF
+        ]
+    );
+}
+
+#[test]
+fn test_arrow_fn() {
+    let input = r#"const test = (a, b) => {
+            //
+        }"#;
+    let mut lexer = Lexer::new(input.to_string());
+    lexer.scan_all_tokens();
+    assert_eq!(lexer.errors, vec![]);
+    assert_eq!(
+        lexer
+            .tokens
+            .iter()
+            .map(|l| l.token.clone())
+            .collect::<Vec<_>>(),
+        vec![
+            Token::Keyword(KeywordToken::Const),
+            Token::Identifier("test".to_string()),
+            Token::Operator(OperatorToken::EqualTo),
+            Token::Delimiter(DelimiterToken::OpenParen),
+            Token::Identifier("a".to_string()),
+            Token::Delimiter(DelimiterToken::Comma),
+            Token::Identifier("b".to_string()),
+            Token::Delimiter(DelimiterToken::CloseParen),
+            Token::Operator(OperatorToken::Arrow),
+            Token::Delimiter(DelimiterToken::OpenBrace),
+            Token::Delimiter(DelimiterToken::NewLine),
+            Token::Comment(CommentToken::Line("".to_string())),
+            Token::Delimiter(DelimiterToken::NewLine),
+            Token::Delimiter(DelimiterToken::CloseBrace),
+            Token::EOF
+        ]
+    );
+}
+
+#[test]
+fn test_template_string() {
+    let input = r#"let x = `"This
+        is template string."`"#;
+    let mut lexer = Lexer::new(input.to_string());
+    lexer.scan_all_tokens();
+    assert_eq!(lexer.errors, vec![]);
+    assert_eq!(
+        lexer
+            .tokens
+            .iter()
+            .map(|l| l.token.clone())
+            .collect::<Vec<_>>(),
+        vec![
+            Token::Keyword(KeywordToken::Let),
+            Token::Identifier("x".to_string()),
+            Token::Operator(OperatorToken::EqualTo),
+            Token::Literal(LiteralToken::String(StringLiteral::Template(
+                r#""This
+        is template string.""#
+                    .to_string()
+            ))),
             Token::EOF
         ]
     );

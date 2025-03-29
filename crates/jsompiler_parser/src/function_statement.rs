@@ -1,6 +1,6 @@
 use super::{Identifier, Parser, Statement};
-use crate::lexer::symbol::{DelimiterToken, KeywordToken, Token};
 use crate::{Error, ErrorKind};
+use jsompiler_lexer::symbol::{DelimiterToken, KeywordToken, Token};
 
 #[derive(Clone, Debug)]
 pub struct FunctionStatement {
@@ -38,7 +38,7 @@ impl Parser {
 
         // Expect '('
         if !self.match_token(&Token::Delimiter(
-            crate::lexer::symbol::DelimiterToken::OpenParen,
+            jsompiler_lexer::symbol::DelimiterToken::OpenParen,
         )) {
             return Err(vec![Error {
                 error_kind: ErrorKind::UnexpectedToken,

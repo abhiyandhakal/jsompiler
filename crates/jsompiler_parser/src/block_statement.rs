@@ -1,9 +1,6 @@
-use crate::{
-    Error, ErrorKind,
-    lexer::symbol::{DelimiterToken, Token},
-};
-
 use super::{Parser, Statement};
+use jsompiler_common::{Error, ErrorKind};
+use jsompiler_lexer::symbol::{DelimiterToken, Token};
 
 #[derive(Debug, Clone)]
 pub struct BlockStatement {

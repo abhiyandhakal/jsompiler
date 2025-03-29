@@ -16,10 +16,10 @@ use let_statement::LetStatement;
 use return_statement::ReturnStatement;
 use while_statement::WhileStatement;
 
-use crate::lexer::symbol::{
+use jsompiler_common::{Error, ErrorKind};
+use jsompiler_lexer::symbol::{
     DelimiterToken, KeywordToken, Lexeme, LiteralToken, OperatorToken, Token,
 };
-use crate::{Error, ErrorKind};
 
 #[derive(Debug)]
 pub enum Node {

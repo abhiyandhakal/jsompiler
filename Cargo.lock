@@ -6,7 +6,28 @@ version = 4
 name = "jsompiler"
 version = "0.1.0"
 dependencies = [
+ "jsompiler_lexer",
+ "jsompiler_parser",
+]
+
+[[package]]
+name = "jsompiler_common"
+version = "0.1.0"
+
+[[package]]
+name = "jsompiler_lexer"
+version = "0.1.0"
+dependencies = [
+ "jsompiler_common",
  "lazy_static",
+]
+
+[[package]]
+name = "jsompiler_parser"
+version = "0.1.0"
+dependencies = [
+ "jsompiler_common",
+ "jsompiler_lexer",
 ]
 
 [[package]]
