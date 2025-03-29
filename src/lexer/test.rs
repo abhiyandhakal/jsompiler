@@ -196,3 +196,30 @@ fn test_arrow_fn() {
         ]
     );
 }
+
+#[test]
+fn test_template_string() {
+    let input = r#"let x = `"This
+        is template string."`"#;
+    let mut lexer = Lexer::new(input.to_string());
+    lexer.scan_all_tokens();
+    assert_eq!(lexer.errors, vec![]);
+    assert_eq!(
+        lexer
+            .tokens
+            .iter()
+            .map(|l| l.token.clone())
+            .collect::<Vec<_>>(),
+        vec![
+            Token::Keyword(KeywordToken::Let),
+            Token::Identifier("x".to_string()),
+            Token::Operator(OperatorToken::EqualTo),
+            Token::Literal(LiteralToken::String(StringLiteral::Template(
+                r#""This
+        is template string.""#
+                    .to_string()
+            ))),
+            Token::EOF
+        ]
+    );
+}
