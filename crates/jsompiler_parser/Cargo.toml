@@ -1,0 +1,11 @@
+[package]
+name = "jsompiler_parser"
+version = "0.1.0"
+edition = "2021"
+description = "Parser for JavaScript"
+license = "MIT"
+repository = "https://github.com/abhiyandhakal/jsompiler"
+
+[dependencies]
+jsompiler_lexer = { path = "../jsompiler_lexer" }
+jsompiler_common = { path = "../jsompiler_common" }

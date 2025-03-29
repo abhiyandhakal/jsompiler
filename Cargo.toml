@@ -3,5 +3,13 @@ name = "jsompiler"
 version = "0.1.0"
 edition = "2024"
 
+[workspace]
+members = [
+	"crates/jsompiler_common",
+	"crates/jsompiler_lexer",
+	"crates/jsompiler_parser"
+]
+
 [dependencies]
-lazy_static = "1.5.0"
+jsompiler_lexer = { path = "crates/jsompiler_lexer" }
+jsompiler_parser = { path = "crates/jsompiler_parser" }

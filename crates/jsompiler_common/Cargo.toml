@@ -1,0 +1,7 @@
+[package]
+name = "jsompiler_common"
+version = "0.1.0"
+edition = "2024"
+description = "Common utilities for jsompiler"
+license = "MIT"
+repository = "https://github.com/abhiyandhakal/jsompiler"
