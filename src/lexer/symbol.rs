@@ -73,6 +73,7 @@ pub enum OperatorToken {
     Not,
     // Other
     Arrow,
+    Spread, // ...
     // Additional operators
     PlusEqual,       // +=
     MinusEqual,      // -=
@@ -192,6 +193,7 @@ lazy_static! {
         m.insert(":", lexeme(":".to_string(), Token::Operator(OperatorToken::Colon)));
         m.insert("??", lexeme("??".to_string(), Token::Operator(OperatorToken::NullishCoalesce)));
         m.insert("?.", lexeme("?.".to_string(), Token::Operator(OperatorToken::OptionalChain)));
+        m.insert("...", lexeme("...".to_string(), Token::Operator(OperatorToken::Spread)));
 
         // Delimiters
         m.insert("(", lexeme("(".to_string(), Token::Delimiter(DelimiterToken::OpenParen)));
@@ -255,6 +257,7 @@ impl std::fmt::Display for OperatorToken {
             OperatorToken::Colon => ":",
             OperatorToken::NullishCoalesce => "??",
             OperatorToken::OptionalChain => "?.",
+            OperatorToken::Spread => "...",
         };
 
         write!(f, "{}", symbol)
