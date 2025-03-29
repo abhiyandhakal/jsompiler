@@ -315,7 +315,7 @@ impl Lexer {
 
                                     for len in (1..=3).rev() {
                                         let end_index = self.start + len;
-                                        if end_index >= self.source.len() {
+                                        if end_index > self.source.len() {
                                             continue;
                                         }
                                         let lexeme_slice: String =
@@ -329,32 +329,6 @@ impl Lexer {
                                     }
 
                                     if longest_match.is_none() {
-                                        if c == '\n' {
-                                            return Ok(Some(symbol::Lexeme {
-                                                text: "\n".to_string(),
-                                                len: 1,
-                                                token: symbol::Token::Delimiter(
-                                                    DelimiterToken::NewLine,
-                                                ),
-                                            }));
-                                        }
-                                        if c == ';' {
-                                            return Ok(Some(symbol::Lexeme {
-                                                text: ";".to_string(),
-                                                len: 1,
-                                                token: symbol::Token::Delimiter(
-                                                    DelimiterToken::Semicolon,
-                                                ),
-                                            }));
-                                        }
-                                        if c == '\0' {
-                                            return Ok(Some(symbol::Lexeme {
-                                                text: "\0".to_string(),
-                                                len: 0,
-                                                token: symbol::Token::EOF,
-                                            }));
-                                        }
-
                                         return Err(Error {
                                             error_kind: ErrorKind::LexerError,
                                             message: format!("Unexpected character: {c}")
@@ -398,7 +372,7 @@ impl Lexer {
 
                     for len in (1..=3).rev() {
                         let end_index = self.start + len;
-                        if end_index >= self.source.len() {
+                        if end_index > self.source.len() {
                             continue;
                         }
                         let lexeme_slice: String =
@@ -412,28 +386,6 @@ impl Lexer {
                     }
 
                     if longest_match.is_none() {
-                        if c == '\n' {
-                            return Ok(Some(symbol::Lexeme {
-                                text: "\n".to_string(),
-                                len: 1,
-                                token: symbol::Token::Delimiter(DelimiterToken::NewLine),
-                            }));
-                        }
-                        if c == ';' {
-                            return Ok(Some(symbol::Lexeme {
-                                text: ";".to_string(),
-                                len: 1,
-                                token: symbol::Token::Delimiter(DelimiterToken::Semicolon),
-                            }));
-                        }
-                        if c == '\0' {
-                            return Ok(Some(symbol::Lexeme {
-                                text: "\0".to_string(),
-                                len: 0,
-                                token: symbol::Token::EOF,
-                            }));
-                        }
-
                         return Err(Error {
                             error_kind: ErrorKind::LexerError,
                             message: format!("Unexpected character: {c}").to_string(),

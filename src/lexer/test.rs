@@ -1,6 +1,6 @@
 #[allow(unused_imports)]
 use crate::lexer::symbol::{
-    DelimiterToken, KeywordToken, LiteralToken, OperatorToken, StringLiteral,
+    CommentToken, DelimiterToken, KeywordToken, LiteralToken, OperatorToken, StringLiteral,
 };
 #[allow(unused_imports)]
 use crate::lexer::{Lexer, Token};
@@ -133,4 +133,32 @@ fn test_lexer_invalid_input() {
     lexer.scan_all_tokens();
     println!("{:?}", lexer.tokens);
     assert_ne!(lexer.errors, vec![]);
+}
+
+#[test]
+fn test_fn() {
+    let input = r#"function() {
+            //
+        }"#;
+    let mut lexer = Lexer::new(input.to_string());
+    lexer.scan_all_tokens();
+    assert_eq!(lexer.errors, vec![]);
+    assert_eq!(
+        lexer
+            .tokens
+            .iter()
+            .map(|l| l.token.clone())
+            .collect::<Vec<_>>(),
+        vec![
+            Token::Keyword(KeywordToken::Function),
+            Token::Delimiter(DelimiterToken::OpenParen),
+            Token::Delimiter(DelimiterToken::CloseParen),
+            Token::Delimiter(DelimiterToken::OpenBrace),
+            Token::Delimiter(DelimiterToken::NewLine),
+            Token::Comment(CommentToken::Line("".to_string())),
+            Token::Delimiter(DelimiterToken::NewLine),
+            Token::Delimiter(DelimiterToken::CloseBrace),
+            Token::EOF
+        ]
+    );
 }
