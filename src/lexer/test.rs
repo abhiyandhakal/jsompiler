@@ -131,5 +131,6 @@ fn test_lexer_invalid_input() {
     let input = "let x = 5.5.5;";
     let mut lexer = Lexer::new(input.to_string());
     lexer.scan_all_tokens();
+    println!("{:?}", lexer.tokens);
     assert_ne!(lexer.errors, vec![]);
 }

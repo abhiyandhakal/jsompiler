@@ -379,6 +379,20 @@ impl Lexer {
                 Ok(None)
             }
             c => {
+                // Don't allow lexing of '.' after floating point number
+                if c == '.' {
+                    if let Some(lexeme) = self.tokens.last() {
+                        if lexeme.text.contains(".") {
+                            return Err(Error {
+                                pos: self.current,
+                                line_number: self.line_number,
+                                message: format!("Invalid number: \"{}.\"", lexeme.text),
+                                error_kind: ErrorKind::LexerError,
+                            });
+                        }
+                    }
+                }
+
                 if !self.is_beyond_end() {
                     let mut longest_match = None;
 
