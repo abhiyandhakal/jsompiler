@@ -1,9 +1,9 @@
 #[allow(unused_imports)]
-use crate::lexer::symbol::{
+use super::symbol::{
     CommentToken, DelimiterToken, KeywordToken, LiteralToken, OperatorToken, StringLiteral,
 };
 #[allow(unused_imports)]
-use crate::lexer::{Lexer, Token};
+use super::{Lexer, Token};
 
 #[test]
 fn test_lexer_var_declaration() {

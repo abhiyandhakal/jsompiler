@@ -1,5 +1,5 @@
-use jsompiler::lexer::Lexer;
-use jsompiler::parser::Parser;
+use jsompiler_lexer::Lexer;
+use jsompiler_parser::Parser;
 use std::fs::read_to_string;
 
 fn main() {

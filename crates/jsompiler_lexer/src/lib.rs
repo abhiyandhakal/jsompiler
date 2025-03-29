@@ -1,8 +1,8 @@
 pub mod symbol;
 mod test;
 
-use crate::lexer::symbol::{DelimiterToken, Lexeme, LiteralToken, SYMBOLS, Token, lexeme};
-use crate::{Error, ErrorKind};
+use jsompiler_common::{Error, ErrorKind};
+use symbol::{DelimiterToken, Lexeme, LiteralToken, SYMBOLS, Token, lexeme};
 
 pub struct Lexer {
     pub source: Vec<char>, // Code to be scanned

@@ -1,9 +1,6 @@
-use crate::{
-    Error, ErrorKind,
-    lexer::symbol::{KeywordToken, Token},
-};
-
-use super::{Parser, Statement, expression::Expression};
+use super::{expression::Expression, Parser, Statement};
+use crate::{Error, ErrorKind};
+use jsompiler_lexer::symbol::{KeywordToken, Token};
 
 #[derive(Debug, Clone)]
 pub struct IfStatement {

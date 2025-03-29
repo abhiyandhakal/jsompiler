@@ -1,7 +1,7 @@
 use super::expression::Expression;
 use super::{Identifier, Parser, Statement};
-use crate::lexer::symbol::{KeywordToken, OperatorToken, Token};
 use crate::{Error, ErrorKind};
+use jsompiler_lexer::symbol::{KeywordToken, OperatorToken, Token};
 
 #[derive(Debug, Clone)]
 pub struct LetStatement {

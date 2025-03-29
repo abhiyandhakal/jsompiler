@@ -1,2 +1,2 @@
-pub mod lexer;
-pub mod parser;
+pub use jsompiler_lexer;
+pub use jsompiler_parser;

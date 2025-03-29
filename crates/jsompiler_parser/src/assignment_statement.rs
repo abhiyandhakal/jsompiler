@@ -1,9 +1,6 @@
-use crate::{
-    Error, ErrorKind,
-    lexer::symbol::{Lexeme, OperatorToken, Token},
-};
-
-use super::{Parser, Statement, expression::Expression};
+use super::{expression::Expression, Parser, Statement};
+use jsompiler_common::{Error, ErrorKind};
+use jsompiler_lexer::symbol::{Lexeme, OperatorToken, Token};
 
 #[derive(Debug, Clone)]
 pub struct AssignmentStatement {
