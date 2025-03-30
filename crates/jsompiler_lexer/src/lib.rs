@@ -135,14 +135,8 @@ impl Lexer {
 
                 let keyword = SYMBOLS.iter().find(|f| *f.0 == token_string);
                 if let Some(keyword) = keyword {
+                    println!("{}", keyword.0);
                     return Ok(Some(keyword.1.clone()));
-                }
-
-                if token_string == "NaN".to_string() {
-                    return Ok(Some(lexeme(
-                        token_string,
-                        Token::Literal(LiteralToken::Number(symbol::NumberLiteral::NaN)),
-                    )));
                 }
 
                 Ok(Some(lexeme(

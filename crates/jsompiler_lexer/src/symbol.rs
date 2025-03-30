@@ -216,6 +216,11 @@ lazy_static! {
         m.insert("//", lexeme("//".to_string(), Token::Comment(CommentToken::Line("//".to_string()))));
         m.insert("/*", lexeme("/*".to_string(), Token::Comment(CommentToken::Block("/*".to_string()))));
 
+        // Literal Types
+        m.insert("undefined", lexeme("/*".to_string(), Token::Literal(LiteralToken::Undefined)));
+        m.insert("null", lexeme("/*".to_string(), Token::Literal(LiteralToken::Null)));
+        m.insert("NaN", lexeme("/*".to_string(), Token::Literal(LiteralToken::Number(NumberLiteral::NaN))));
+
         m // return
     };
 }
