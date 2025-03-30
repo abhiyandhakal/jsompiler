@@ -1,6 +1,7 @@
 #[allow(unused_imports)]
 use super::symbol::{
-    CommentToken, DelimiterToken, KeywordToken, LiteralToken, OperatorToken, StringLiteral,
+    CommentToken, DelimiterToken, KeywordToken, LiteralToken, NumberLiteral, OperatorToken,
+    StringLiteral,
 };
 #[allow(unused_imports)]
 use super::{Lexer, Token};
@@ -21,7 +22,7 @@ fn test_lexer_var_declaration() {
             Token::Keyword(KeywordToken::Let),
             Token::Identifier("x".to_string()),
             Token::Operator(OperatorToken::EqualTo),
-            Token::Literal(LiteralToken::Number(5_f64)),
+            Token::Literal(LiteralToken::Number(NumberLiteral::Value(5_f64))),
             Token::Delimiter(DelimiterToken::Semicolon),
             Token::EOF
         ]
@@ -44,7 +45,7 @@ fn test_lexer_var_declaration_no_semicolon() {
             Token::Keyword(KeywordToken::Let),
             Token::Identifier("x".to_string()),
             Token::Operator(OperatorToken::EqualTo),
-            Token::Literal(LiteralToken::Number(5_f64)),
+            Token::Literal(LiteralToken::Number(NumberLiteral::Value(5_f64))),
             Token::EOF
         ]
     );
@@ -100,16 +101,16 @@ fn test_lexer_arithmetic() {
             Token::Identifier("result".to_string()),
             Token::Operator(OperatorToken::EqualTo),
             Token::Delimiter(DelimiterToken::OpenParen),
-            Token::Literal(LiteralToken::Number(5_f64)),
+            Token::Literal(LiteralToken::Number(NumberLiteral::Value(5_f64))),
             Token::Operator(OperatorToken::Asterisk),
-            Token::Literal(LiteralToken::Number(10_f64)),
+            Token::Literal(LiteralToken::Number(NumberLiteral::Value(10_f64))),
             Token::Operator(OperatorToken::Plus),
-            Token::Literal(LiteralToken::Number(2_f64)),
+            Token::Literal(LiteralToken::Number(NumberLiteral::Value(2_f64))),
             Token::Delimiter(DelimiterToken::CloseParen),
             Token::Operator(OperatorToken::Slash),
-            Token::Literal(LiteralToken::Number(4_f64)),
+            Token::Literal(LiteralToken::Number(NumberLiteral::Value(4_f64))),
             Token::Operator(OperatorToken::Minus),
-            Token::Literal(LiteralToken::Number(3_f64)),
+            Token::Literal(LiteralToken::Number(NumberLiteral::Value(3_f64))),
             Token::Delimiter(DelimiterToken::Semicolon),
             Token::EOF
         ]
