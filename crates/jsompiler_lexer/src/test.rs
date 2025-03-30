@@ -253,3 +253,41 @@ fn test_literal_keywords() {
         ]
     );
 }
+
+#[test]
+fn test_unary() {
+    let input = "x = y++; x = ++y; x = y--; x = --y;";
+    let mut lexer = Lexer::new(input.to_string());
+    lexer.scan_all_tokens();
+    assert_eq!(lexer.errors, vec![]);
+    assert_eq!(
+        lexer
+            .tokens
+            .iter()
+            .map(|l| l.token.clone())
+            .collect::<Vec<_>>(),
+        vec![
+            Token::Identifier("x".to_string()),
+            Token::Operator(OperatorToken::EqualTo),
+            Token::Identifier("y".to_string()),
+            Token::Operator(OperatorToken::Increment),
+            Token::Delimiter(DelimiterToken::Semicolon),
+            Token::Identifier("x".to_string()),
+            Token::Operator(OperatorToken::EqualTo),
+            Token::Operator(OperatorToken::Increment),
+            Token::Identifier("y".to_string()),
+            Token::Delimiter(DelimiterToken::Semicolon),
+            Token::Identifier("x".to_string()),
+            Token::Operator(OperatorToken::EqualTo),
+            Token::Identifier("y".to_string()),
+            Token::Operator(OperatorToken::Decrement),
+            Token::Delimiter(DelimiterToken::Semicolon),
+            Token::Identifier("x".to_string()),
+            Token::Operator(OperatorToken::EqualTo),
+            Token::Operator(OperatorToken::Decrement),
+            Token::Identifier("y".to_string()),
+            Token::Delimiter(DelimiterToken::Semicolon),
+            Token::EOF
+        ]
+    );
+}
