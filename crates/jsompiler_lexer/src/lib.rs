@@ -98,7 +98,9 @@ impl Lexer {
                     let token_num = token_num.unwrap();
                     return Ok(Some(lexeme(
                         token_string,
-                        Token::Literal(LiteralToken::Number(token_num)),
+                        Token::Literal(LiteralToken::Number(symbol::NumberLiteral::Value(
+                            token_num,
+                        ))),
                     )));
                 }
                 let token_num = token_string.parse::<f64>();
@@ -114,7 +116,9 @@ impl Lexer {
 
                 Ok(Some(lexeme(
                     token_string,
-                    Token::Literal(LiteralToken::Number(token_num)),
+                    Token::Literal(LiteralToken::Number(symbol::NumberLiteral::Value(
+                        token_num,
+                    ))),
                 )))
             }
             // Keywords and identifiers
@@ -132,6 +136,13 @@ impl Lexer {
                 let keyword = SYMBOLS.iter().find(|f| *f.0 == token_string);
                 if let Some(keyword) = keyword {
                     return Ok(Some(keyword.1.clone()));
+                }
+
+                if token_string == "NaN".to_string() {
+                    return Ok(Some(lexeme(
+                        token_string,
+                        Token::Literal(LiteralToken::Number(symbol::NumberLiteral::NaN)),
+                    )));
                 }
 
                 Ok(Some(lexeme(

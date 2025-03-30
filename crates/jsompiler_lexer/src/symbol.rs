@@ -104,11 +104,17 @@ pub enum DelimiterToken {
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum LiteralToken {
-    Number(f64),
+    Number(NumberLiteral),
     String(StringLiteral),
     Boolean(bool),
     Null,
     Undefined,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum NumberLiteral {
+    Value(f64),
+    NaN,
 }
 
 #[derive(Debug, PartialEq, Clone)]
