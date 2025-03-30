@@ -291,3 +291,33 @@ fn test_unary() {
         ]
     );
 }
+
+#[test]
+fn test_hex_value() {
+    let input = "x = 0x123;";
+    let mut lexer = Lexer::new(input.to_string());
+    lexer.scan_all_tokens();
+    assert_eq!(lexer.errors, vec![]);
+    assert_eq!(
+        lexer
+            .tokens
+            .iter()
+            .map(|l| l.token.clone())
+            .collect::<Vec<_>>(),
+        vec![
+            Token::Identifier("x".to_string()),
+            Token::Operator(OperatorToken::EqualTo),
+            Token::Literal(LiteralToken::Number(NumberLiteral::Value(291_f64))),
+            Token::Delimiter(DelimiterToken::Semicolon),
+            Token::EOF
+        ]
+    );
+}
+
+#[test]
+fn test_invalid_hex_value() {
+    let input = "x = 0x12l;";
+    let mut lexer = Lexer::new(input.to_string());
+    lexer.scan_all_tokens();
+    assert_eq!(lexer.errors, vec![]);
+}

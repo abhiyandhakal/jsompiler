@@ -125,6 +125,7 @@ pub enum LiteralToken {
 pub enum NumberLiteral {
     Value(f64),
     NaN,
+    Infinity,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -238,6 +239,7 @@ lazy_static! {
         m.insert("undefined", lexeme("/*".to_string(), Token::Literal(LiteralToken::Undefined)));
         m.insert("null", lexeme("/*".to_string(), Token::Literal(LiteralToken::Null)));
         m.insert("NaN", lexeme("/*".to_string(), Token::Literal(LiteralToken::Number(NumberLiteral::NaN))));
+        m.insert("Infinity", lexeme("/*".to_string(), Token::Literal(LiteralToken::Number(NumberLiteral::Infinity))));
 
         m // return
     };
