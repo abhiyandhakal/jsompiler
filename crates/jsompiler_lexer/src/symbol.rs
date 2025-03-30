@@ -71,21 +71,31 @@ pub enum OperatorToken {
     And,
     Or,
     Not,
+    // Bitwise logical
+    BitwiseNot, // ~
+    BitwiseAnd, // &
+    BitwiseOr,  // |
+    BitwiseXor, // ^
+    // Shift
+    LeftShift,          // <<
+    RightShift,         // >>
+    UnsignedRightShift, // >>>
     // Other
     Arrow,
     Spread, // ...
     // Additional operators
-    PlusEqual,       // +=
-    MinusEqual,      // -=
-    AsteriskEqual,   // *=
-    SlashEqual,      // /=
-    PercentEqual,    // %=
-    Increment,       // ++
-    Decrement,       // --
-    QuestionMark,    // ?
-    Colon,           // :
-    NullishCoalesce, // ??
-    OptionalChain,   // ?.
+    PlusEqual,        // +=
+    MinusEqual,       // -=
+    AsteriskEqual,    // *=
+    AsteriskAsterisk, // **
+    SlashEqual,       // /=
+    PercentEqual,     // %=
+    Increment,        // ++
+    Decrement,        // --
+    QuestionMark,     // ?
+    Colon,            // :
+    NullishCoalesce,  // ??
+    OptionalChain,    // ?.
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -185,12 +195,20 @@ lazy_static! {
         m.insert("&&", lexeme("&&".to_string(), Token::Operator(OperatorToken::And)));
         m.insert("||", lexeme("||".to_string(), Token::Operator(OperatorToken::Or)));
         m.insert("!", lexeme("!".to_string(), Token::Operator(OperatorToken::Not)));
+        m.insert("&", lexeme("&".to_string(), Token::Operator(OperatorToken::BitwiseAnd)));
+        m.insert("|", lexeme("|".to_string(), Token::Operator(OperatorToken::BitwiseOr)));
+        m.insert("~", lexeme("~".to_string(), Token::Operator(OperatorToken::BitwiseNot)));
+        m.insert("^", lexeme("^".to_string(), Token::Operator(OperatorToken::BitwiseXor)));
+        m.insert("<<", lexeme("<<".to_string(), Token::Operator(OperatorToken::LeftShift)));
+        m.insert(">>", lexeme(">>".to_string(), Token::Operator(OperatorToken::RightShift)));
+        m.insert(">>>", lexeme(">>>".to_string(), Token::Operator(OperatorToken::UnsignedRightShift)));
         m.insert("=>", lexeme("=>".to_string(), Token::Operator(OperatorToken::Arrow)));
 
         // Additional operators
         m.insert("+=", lexeme("+=".to_string(), Token::Operator(OperatorToken::PlusEqual)));
         m.insert("-=", lexeme("-=".to_string(), Token::Operator(OperatorToken::MinusEqual)));
         m.insert("*=", lexeme("*=".to_string(), Token::Operator(OperatorToken::AsteriskEqual)));
+        m.insert("**", lexeme("**".to_string(), Token::Operator(OperatorToken::AsteriskAsterisk)));
         m.insert("/=", lexeme("/=".to_string(), Token::Operator(OperatorToken::SlashEqual)));
         m.insert("%=", lexeme("%=".to_string(), Token::Operator(OperatorToken::PercentEqual)));
         m.insert("++", lexeme("++".to_string(), Token::Operator(OperatorToken::Increment)));
@@ -253,6 +271,17 @@ impl std::fmt::Display for OperatorToken {
             OperatorToken::Or => "||",
             OperatorToken::Not => "!",
 
+            // Bitwise Logical
+            OperatorToken::BitwiseAnd => "&",
+            OperatorToken::BitwiseOr => "|",
+            OperatorToken::BitwiseNot => "~",
+            OperatorToken::BitwiseXor => "^",
+
+            // Shift
+            OperatorToken::LeftShift => "<<",
+            OperatorToken::RightShift => ">>",
+            OperatorToken::UnsignedRightShift => ">>>",
+
             // Other
             OperatorToken::Arrow => "=>",
 
@@ -260,6 +289,7 @@ impl std::fmt::Display for OperatorToken {
             OperatorToken::PlusEqual => "+=",
             OperatorToken::MinusEqual => "-=",
             OperatorToken::AsteriskEqual => "*=",
+            OperatorToken::AsteriskAsterisk => "**",
             OperatorToken::SlashEqual => "/=",
             OperatorToken::PercentEqual => "%=",
             OperatorToken::Increment => "++",
