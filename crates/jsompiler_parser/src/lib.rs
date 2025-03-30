@@ -133,9 +133,8 @@ impl Parser {
         let peek_val = self.peek().token.clone();
         match peek_val {
             Token::Literal(LiteralToken::Number(value)) => {
-                let value = value.parse::<i64>().ok()?;
                 self.advance();
-                Some(LiteralToken::Number(value.to_string()))
+                Some(LiteralToken::Number(value))
             }
             Token::Literal(LiteralToken::Boolean(value)) => {
                 self.advance();

@@ -86,15 +86,35 @@ impl Lexer {
                     }
                     let token_string: String =
                         self.source[self.start..self.current].iter().collect();
+                    let token_num = token_string.parse::<f64>();
+                    if !token_num.is_ok() {
+                        return Err(Error::new(
+                            ErrorKind::LexerError,
+                            format!("Invalid number {token_string}"),
+                            self.line_number,
+                            self.current,
+                        ));
+                    }
+                    let token_num = token_num.unwrap();
                     return Ok(Some(lexeme(
-                        token_string.clone(),
-                        Token::Literal(LiteralToken::Number(token_string)),
+                        token_string,
+                        Token::Literal(LiteralToken::Number(token_num)),
                     )));
                 }
+                let token_num = token_string.parse::<f64>();
+                if !token_num.is_ok() {
+                    return Err(Error::new(
+                        ErrorKind::LexerError,
+                        format!("Invalid number {token_string}"),
+                        self.line_number,
+                        self.current,
+                    ));
+                }
+                let token_num = token_num.unwrap();
 
                 Ok(Some(lexeme(
-                    token_string.clone(),
-                    Token::Literal(LiteralToken::Number(token_string)),
+                    token_string,
+                    Token::Literal(LiteralToken::Number(token_num)),
                 )))
             }
             // Keywords and identifiers

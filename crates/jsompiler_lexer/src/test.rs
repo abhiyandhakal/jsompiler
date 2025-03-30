@@ -21,7 +21,7 @@ fn test_lexer_var_declaration() {
             Token::Keyword(KeywordToken::Let),
             Token::Identifier("x".to_string()),
             Token::Operator(OperatorToken::EqualTo),
-            Token::Literal(LiteralToken::Number("5".to_string())),
+            Token::Literal(LiteralToken::Number(5_f64)),
             Token::Delimiter(DelimiterToken::Semicolon),
             Token::EOF
         ]
@@ -44,7 +44,7 @@ fn test_lexer_var_declaration_no_semicolon() {
             Token::Keyword(KeywordToken::Let),
             Token::Identifier("x".to_string()),
             Token::Operator(OperatorToken::EqualTo),
-            Token::Literal(LiteralToken::Number("5".to_string())),
+            Token::Literal(LiteralToken::Number(5_f64)),
             Token::EOF
         ]
     );
@@ -100,16 +100,16 @@ fn test_lexer_arithmetic() {
             Token::Identifier("result".to_string()),
             Token::Operator(OperatorToken::EqualTo),
             Token::Delimiter(DelimiterToken::OpenParen),
-            Token::Literal(LiteralToken::Number("5".to_string())),
+            Token::Literal(LiteralToken::Number(5_f64)),
             Token::Operator(OperatorToken::Asterisk),
-            Token::Literal(LiteralToken::Number("10".to_string())),
+            Token::Literal(LiteralToken::Number(10_f64)),
             Token::Operator(OperatorToken::Plus),
-            Token::Literal(LiteralToken::Number("2".to_string())),
+            Token::Literal(LiteralToken::Number(2_f64)),
             Token::Delimiter(DelimiterToken::CloseParen),
             Token::Operator(OperatorToken::Slash),
-            Token::Literal(LiteralToken::Number("4".to_string())),
+            Token::Literal(LiteralToken::Number(4_f64)),
             Token::Operator(OperatorToken::Minus),
-            Token::Literal(LiteralToken::Number("3".to_string())),
+            Token::Literal(LiteralToken::Number(3_f64)),
             Token::Delimiter(DelimiterToken::Semicolon),
             Token::EOF
         ]

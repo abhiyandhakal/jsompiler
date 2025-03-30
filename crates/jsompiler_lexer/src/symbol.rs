@@ -104,7 +104,7 @@ pub enum DelimiterToken {
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum LiteralToken {
-    Number(String),
+    Number(f64),
     String(StringLiteral),
     Boolean(bool),
     Null,
