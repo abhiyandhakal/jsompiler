@@ -8,6 +8,7 @@ pub enum Expression {
     Literal(LiteralToken),
     Unary {
         op: Lexeme,
+        op_type: String,
         expr: Box<Expression>,
     },
     Binary {
@@ -69,6 +70,7 @@ impl Parser {
             let expr = self.unary()?;
             Ok(Expression::Unary {
                 op,
+                op_type: "Prefix".to_string(),
                 expr: Box::new(expr),
             })
         } else {
@@ -98,6 +100,21 @@ impl Parser {
             if self.peek().token == Token::Delimiter(DelimiterToken::OpenParen) {
                 return self.parse_function_call(self.previous().clone());
             }
+
+            // Check for postfix increment/decrement
+            if self.match_token(&Token::Operator(OperatorToken::Increment))
+                || self.match_token(&Token::Operator(OperatorToken::Decrement))
+            {
+                return Ok(Expression::Unary {
+                    op: self.previous().clone(),
+                    op_type: "Postfix".to_string(),
+                    expr: Box::new(Expression::Identifier(Identifier {
+                        token: self.previous().clone(),
+                        value: self.previous().text.clone(),
+                    })),
+                });
+            }
+
             let identifier = self.previous().clone();
             return Ok(Expression::Identifier(Identifier {
                 token: identifier.clone(),
