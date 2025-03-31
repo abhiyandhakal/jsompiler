@@ -319,5 +319,40 @@ fn test_invalid_hex_value() {
     let input = "x = 0x12l;";
     let mut lexer = Lexer::new(input.to_string());
     lexer.scan_all_tokens();
+    assert_ne!(lexer.errors, vec![]);
+}
+
+#[test]
+fn test_escape_characters_in_string() {
+    let input = r#"x = 'She\'s good.'; x = "hell\"o"; x = `hell\`o`"#;
+    let mut lexer = Lexer::new(input.to_string());
+    lexer.scan_all_tokens();
     assert_eq!(lexer.errors, vec![]);
+    assert_eq!(
+        lexer
+            .tokens
+            .iter()
+            .map(|l| l.token.clone())
+            .collect::<Vec<_>>(),
+        vec![
+            Token::Identifier("x".to_string()),
+            Token::Operator(OperatorToken::EqualTo),
+            Token::Literal(LiteralToken::String(StringLiteral::Regular(
+                "She's good.".to_string()
+            ))),
+            Token::Delimiter(DelimiterToken::Semicolon),
+            Token::Identifier("x".to_string()),
+            Token::Operator(OperatorToken::EqualTo),
+            Token::Literal(LiteralToken::String(StringLiteral::Regular(
+                "hell\"o".to_string()
+            ))),
+            Token::Delimiter(DelimiterToken::Semicolon),
+            Token::Identifier("x".to_string()),
+            Token::Operator(OperatorToken::EqualTo),
+            Token::Literal(LiteralToken::String(StringLiteral::Template(
+                "hell`o".to_string()
+            ))),
+            Token::EOF
+        ]
+    );
 }
