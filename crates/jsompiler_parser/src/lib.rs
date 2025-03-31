@@ -1,6 +1,7 @@
 mod assignment_statement;
 mod block_statement;
 mod expression;
+mod for_loop_statement;
 mod function_statement;
 mod if_statement;
 mod let_statement;
@@ -10,6 +11,7 @@ mod while_statement;
 use assignment_statement::AssignmentStatement;
 use block_statement::BlockStatement;
 use expression::Expression;
+use for_loop_statement::ForLoopStatement;
 use function_statement::FunctionStatement;
 use if_statement::IfStatement;
 use let_statement::LetStatement;
@@ -37,6 +39,7 @@ pub enum Statement {
     WhileStatement(WhileStatement),
     FunctionStatement(FunctionStatement),
     AssignmentStatement(AssignmentStatement),
+    ForLoopStatement(ForLoopStatement),
 }
 
 #[derive(Debug, Clone)]
@@ -108,6 +111,7 @@ impl Parser {
             Token::Keyword(KeywordToken::Return) => self.parse_return_statement(),
             Token::Keyword(KeywordToken::If) => self.parse_if_statement(),
             Token::Keyword(KeywordToken::While) => self.parse_while_statement(),
+            Token::Keyword(KeywordToken::For) => self.parser_for_loop_statement(),
             Token::Keyword(KeywordToken::Function) => self.parse_function_statement(),
             Token::Delimiter(DelimiterToken::OpenBrace) => self.parse_block_statement(),
             Token::Delimiter(DelimiterToken::OpenParen) => self.parenthesis_expression(),
