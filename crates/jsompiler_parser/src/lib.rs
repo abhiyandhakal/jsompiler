@@ -107,7 +107,15 @@ impl Parser {
             }
             Token::Keyword(KeywordToken::Let)
             | Token::Keyword(KeywordToken::Var)
-            | Token::Keyword(KeywordToken::Const) => self.parse_let_statement(),
+            | Token::Keyword(KeywordToken::Const) => {
+                let stmts = self.parse_let_statement()?;
+                println!("stmts: {:#?}", stmts);
+                for stmt in stmts {
+                    let stmt = stmt.unwrap();
+                    self.ast.push(Node::Statement(stmt));
+                }
+                Ok(None)
+            }
             Token::Keyword(KeywordToken::Return) => self.parse_return_statement(),
             Token::Keyword(KeywordToken::If) => self.parse_if_statement(),
             Token::Keyword(KeywordToken::While) => self.parse_while_statement(),

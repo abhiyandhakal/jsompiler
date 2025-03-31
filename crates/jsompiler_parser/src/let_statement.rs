@@ -1,7 +1,7 @@
 use super::expression::Expression;
 use super::{Identifier, Parser, Statement};
 use crate::{Error, ErrorKind};
-use jsompiler_lexer::symbol::{KeywordToken, OperatorToken, Token};
+use jsompiler_lexer::symbol::{DelimiterToken, KeywordToken, LiteralToken, OperatorToken, Token};
 
 #[derive(Debug, Clone)]
 pub struct LetStatement {
@@ -11,7 +11,7 @@ pub struct LetStatement {
 }
 
 impl Parser {
-    pub fn parse_let_statement(&mut self) -> Result<Option<Statement>, Vec<Error>> {
+    pub fn parse_let_statement(&mut self) -> Result<Vec<Option<Statement>>, Vec<Error>> {
         if !self.match_token(&Token::Keyword(KeywordToken::Let))
             && !self.match_token(&Token::Keyword(KeywordToken::Var))
             && !self.match_token(&Token::Keyword(KeywordToken::Const))
@@ -24,37 +24,58 @@ impl Parser {
             }]);
         }
 
-        if let Token::Identifier(_) = &self.peek().token {
-            let token = self.previous().clone();
-            self.advance();
-            let name = self.previous().clone();
+        let mut declarations = Vec::new();
+        let keyword_token = self.previous().clone(); // Store 'let', 'var', or 'const'
 
-            if !self.match_token(&Token::Operator(OperatorToken::EqualTo)) {
+        loop {
+            // Expect an identifier
+            if let Token::Identifier(_) = &self.peek().token {
+                self.advance();
+                let name = self.previous().clone();
+
+                // Check for optional assignment
+                let value = if self.match_token(&Token::Operator(OperatorToken::EqualTo)) {
+                    Some(Box::new(self.expression()?))
+                } else {
+                    None
+                };
+
+                declarations.push(Some(Statement::LetStatement(LetStatement {
+                    token: keyword_token.token.clone(),
+                    name: Identifier {
+                        token: name.clone(),
+                        value: name.text,
+                    },
+                    value: value
+                        .unwrap_or_else(|| Box::new(Expression::Literal(LiteralToken::Undefined))),
+                })));
+            } else {
                 return Err(vec![Error {
                     error_kind: ErrorKind::UnexpectedToken,
-                    message: "Expected '=' after variable name".to_string(),
+                    message: "Expected identifier after 'let'".to_string(),
                     line_number: 1,
                     pos: 2,
                 }]);
             }
 
-            let value = Box::new(self.expression()?);
+            // Stop if no more comma
+            if !self.match_token(&Token::Delimiter(DelimiterToken::Comma)) {
+                break;
+            }
+        }
 
-            Ok(Some(Statement::LetStatement(LetStatement {
-                token: token.token,
-                name: Identifier {
-                    token: name.clone(),
-                    value: name.text,
-                },
-                value,
-            })))
-        } else {
-            Err(vec![Error {
+        // Ensure a valid statement terminator
+        if !self.match_token(&Token::Delimiter(DelimiterToken::Semicolon))
+            && !self.match_token(&Token::Delimiter(DelimiterToken::NewLine))
+        {
+            return Err(vec![Error {
                 error_kind: ErrorKind::UnexpectedToken,
-                message: "Expected identifier after 'let'".to_string(),
+                message: "Expected ';' or newline after variable declaration".to_string(),
                 line_number: 1,
                 pos: 2,
-            }])
+            }]);
         }
+
+        Ok(declarations)
     }
 }
