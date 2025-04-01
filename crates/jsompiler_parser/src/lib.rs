@@ -97,7 +97,9 @@ impl Parser {
                 self.advance();
                 self.parse_statement()
             }
-            Token::Literal(_) | Token::Operator(_) => self.parse_expression(),
+            Token::Literal(_)
+            | Token::Operator(_)
+            | Token::Delimiter(DelimiterToken::OpenBracket) => self.parse_expression(),
             Token::Identifier(_) => {
                 if self.next().token == Token::Operator(OperatorToken::EqualTo) {
                     self.parse_assignment_statement()
