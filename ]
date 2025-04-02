@@ -83,8 +83,8 @@ impl Lexer {
             'a'..='z' | 'A'..='Z' | '_' | '$' => self.lex_identifier(),
             // String
             '`' => self.lex_string('`'),
-            '"' => self.lex_string('"'),
-            '\'' => self.lex_string('\''),
+            '"' => self.lex_doublequote_string(),
+            '\'' => self.lex_singlequote_string(),
             '/' => self.lex_comment(),
             c => self.lex_operator_punctuation(c),
         }
