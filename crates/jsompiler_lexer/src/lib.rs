@@ -82,7 +82,7 @@ impl Lexer {
             // Keywords and identifiers
             'a'..='z' | 'A'..='Z' | '_' | '$' => self.lex_identifier(),
             // String
-            '`' => self.lex_string('`'),
+            '`' => self.lex_template_string(),
             '"' => self.lex_string('"'),
             '\'' => self.lex_string('\''),
             '/' => self.lex_comment(),

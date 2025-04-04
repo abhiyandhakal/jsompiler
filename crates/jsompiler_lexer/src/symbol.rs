@@ -110,6 +110,7 @@ pub enum DelimiterToken {
     Comma,        // ,
     Dot,          // .
     NewLine,      // \n
+    Tilde,        // `
 }
 
 #[derive(Debug, PartialEq, Clone)]

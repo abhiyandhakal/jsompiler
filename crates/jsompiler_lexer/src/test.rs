@@ -201,7 +201,7 @@ fn test_arrow_fn() {
 #[test]
 fn test_template_string() {
     let input = r#"let x = `"This
-        is template string."`"#;
+        is ${template()} string."`"#;
     let mut lexer = Lexer::new(input.to_string());
     lexer.scan_all_tokens();
     assert_eq!(lexer.errors, vec![]);
@@ -215,11 +215,22 @@ fn test_template_string() {
             Token::Keyword(KeywordToken::Let),
             Token::Identifier("x".to_string()),
             Token::Operator(OperatorToken::EqualTo),
-            Token::Literal(LiteralToken::String(StringLiteral::Template(
+            Token::Delimiter(DelimiterToken::Tilde),
+            Token::Literal(LiteralToken::String(StringLiteral::Regular(
                 r#""This
-        is template string.""#
+        is "#
                     .to_string()
             ))),
+            Token::Identifier("$".to_string()),
+            Token::Delimiter(DelimiterToken::OpenBrace),
+            Token::Identifier("template".to_string()),
+            Token::Delimiter(DelimiterToken::OpenParen),
+            Token::Delimiter(DelimiterToken::CloseParen),
+            Token::Delimiter(DelimiterToken::CloseBrace),
+            Token::Literal(LiteralToken::String(StringLiteral::Regular(
+                r#" string.""#.to_string()
+            ))),
+            Token::Delimiter(DelimiterToken::Tilde),
             Token::EOF
         ]
     );
@@ -349,9 +360,11 @@ fn test_escape_characters_in_string() {
             Token::Delimiter(DelimiterToken::Semicolon),
             Token::Identifier("x".to_string()),
             Token::Operator(OperatorToken::EqualTo),
-            Token::Literal(LiteralToken::String(StringLiteral::Template(
+            Token::Delimiter(DelimiterToken::Tilde),
+            Token::Literal(LiteralToken::String(StringLiteral::Regular(
                 "hell`o".to_string()
             ))),
+            Token::Delimiter(DelimiterToken::Tilde),
             Token::EOF
         ]
     );
