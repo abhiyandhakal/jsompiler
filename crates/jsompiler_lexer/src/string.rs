@@ -2,7 +2,7 @@ use jsompiler_common::{Error, ErrorKind};
 
 use crate::{
     Lexer,
-    symbol::{self, DelimiterToken, Lexeme, LiteralToken, Token, lexeme},
+    symbol::{DelimiterToken, Lexeme, LiteralToken, Token, lexeme},
 };
 
 impl Lexer {
@@ -23,9 +23,7 @@ impl Lexer {
             {
                 self.tokens.push(lexeme(
                     processed_string.clone(),
-                    Token::Literal(LiteralToken::String(symbol::StringLiteral::Regular(
-                        processed_string.clone(),
-                    ))),
+                    Token::Literal(LiteralToken::String(processed_string.clone())),
                 ));
                 processed_string = "".to_string();
 
@@ -73,9 +71,7 @@ impl Lexer {
         }
         self.tokens.push(lexeme(
             processed_string.clone(),
-            Token::Literal(LiteralToken::String(symbol::StringLiteral::Regular(
-                processed_string,
-            ))),
+            Token::Literal(LiteralToken::String(processed_string)),
         ));
         self.advance(); // consume the closing quote
 
@@ -93,19 +89,9 @@ impl Lexer {
             }
         }
         self.advance(); // consume the closing quote
-        if ch == '`' {
-            return Ok(Some(lexeme(
-                self.source[self.start..self.current].iter().collect(),
-                Token::Literal(LiteralToken::String(symbol::StringLiteral::Template(
-                    processed_string,
-                ))),
-            )));
-        }
         Ok(Some(lexeme(
             self.source[self.start..self.current].iter().collect(),
-            Token::Literal(LiteralToken::String(symbol::StringLiteral::Regular(
-                processed_string,
-            ))),
+            Token::Literal(LiteralToken::String(processed_string)),
         )))
     }
 
