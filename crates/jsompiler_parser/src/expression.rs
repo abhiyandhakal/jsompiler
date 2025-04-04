@@ -20,6 +20,9 @@ pub enum Expression {
         name: Identifier,
         args: Vec<Expression>,
     },
+    ArrayLiteral {
+        elements: Vec<Expression>,
+    },
 }
 
 impl Parser {
@@ -56,6 +59,11 @@ impl Parser {
     }
 
     pub fn expression(&mut self) -> Result<Expression, Vec<Error>> {
+        // Parse array expression
+        if self.peek().token == Token::Delimiter(DelimiterToken::OpenBracket) {
+            return self.array_expression();
+        }
+
         self.comparison() // Start from highest precedence binary operations
     }
 
@@ -242,5 +250,37 @@ impl Parser {
             },
             args,
         })
+    }
+
+    pub fn array_expression(&mut self) -> Result<Expression, Vec<Error>> {
+        self.advance(); // Consume open bracket
+        let mut elements = Vec::new();
+
+        while self.peek().token != Token::Delimiter(DelimiterToken::CloseBracket) {
+            let expr = self.expression()?;
+            elements.push(expr);
+
+            if !self.match_token(&Token::Delimiter(DelimiterToken::Comma))
+                && self.peek().token != Token::Delimiter(DelimiterToken::CloseBracket)
+            {
+                return Err(vec![Error {
+                    error_kind: ErrorKind::UnexpectedToken,
+                    message: "Expected ',' or ']'".to_string(),
+                    line_number: 1,
+                    pos: 2,
+                }]);
+            }
+        }
+
+        if !self.match_token(&Token::Delimiter(DelimiterToken::CloseBracket)) {
+            return Err(vec![Error {
+                error_kind: ErrorKind::UnexpectedToken,
+                message: "Expected ']'".to_string(),
+                line_number: 1,
+                pos: 2,
+            }]);
+        }
+
+        Ok(Expression::ArrayLiteral { elements })
     }
 }
