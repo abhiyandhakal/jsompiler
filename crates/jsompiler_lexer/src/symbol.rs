@@ -18,6 +18,7 @@ pub enum Token {
     Identifier(String),
     WhiteSpace(String),
     RegExp { pattern: String, flags: String },
+    ContextualKeyword(ContextualKeywordToken),
     EOF,
 }
 
@@ -46,6 +47,20 @@ pub enum KeywordToken {
     Catch,
     Finally,
     Throw,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum ContextualKeywordToken {
+    Get,
+    Set,
+    Async,
+    Await,
+    From,
+    As,
+    Of,
+    Yield,
+    Static,
+    With,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -164,6 +179,18 @@ lazy_static! {
         m.insert("for", lexeme("for".to_string(), Token::Keyword(KeywordToken::For)));
         m.insert("break", lexeme("break".to_string(), Token::Keyword(KeywordToken::Break)));
         m.insert("continue", lexeme("continue".to_string(), Token::Keyword(KeywordToken::Continue)));
+
+        // Contextual keywords
+        m.insert("get", lexeme("get".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Get)));
+        m.insert("set", lexeme("set".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Set)));
+        m.insert("async", lexeme("async".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Async)));
+        m.insert("await", lexeme("await".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Await)));
+        m.insert("from", lexeme("from".to_string(), Token::ContextualKeyword(ContextualKeywordToken::From)));
+        m.insert("as", lexeme("as".to_string(), Token::ContextualKeyword(ContextualKeywordToken::As)));
+        m.insert("of", lexeme("of".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Of)));
+        m.insert("yield", lexeme("yield".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Yield)));
+        m.insert("static", lexeme("static".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Static)));
+        m.insert("with", lexeme("with".to_string(), Token::ContextualKeyword(ContextualKeywordToken::With)));
 
         // Additional keywords
         m.insert("class", lexeme("class".to_string(), Token::Keyword(KeywordToken::Class)));
