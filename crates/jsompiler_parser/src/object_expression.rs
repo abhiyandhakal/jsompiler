@@ -2,14 +2,14 @@ use crate::{expression::Expression, Identifier, Parser, Statement};
 use crate::{Error, ErrorKind};
 use jsompiler_lexer::symbol::{
     ContextualKeywordToken, DelimiterToken, KeywordToken, LiteralToken, NumberLiteral,
-    OperatorToken, StringLiteral, Token,
+    OperatorToken, Token,
 };
 
 // Enhanced Property types for object literals
 #[derive(Debug, Clone)]
 pub enum PropertyKey {
     Identifier(String),
-    StringLiteral(StringLiteral),
+    StringLiteral(String),
     NumberLiteral(NumberLiteral),
     Computed(Box<Expression>), // For computed properties like { [expr]: value }
 }
@@ -317,7 +317,7 @@ impl Parser {
             Token::Delimiter(DelimiterToken::CloseBrace) => true,
 
             // If we see block-specific tokens, it's definitely a block
-            Token::Keyword(KeywordToken::Let)
+            Token::ContextualKeyword(ContextualKeywordToken::Let)
             | Token::Keyword(KeywordToken::Var)
             | Token::Keyword(KeywordToken::Const)
             | Token::Keyword(KeywordToken::Function)

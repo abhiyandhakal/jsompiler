@@ -1,7 +1,9 @@
 use super::expression::Expression;
 use super::{Identifier, Parser, Statement};
 use crate::{Error, ErrorKind};
-use jsompiler_lexer::symbol::{DelimiterToken, KeywordToken, LiteralToken, OperatorToken, Token};
+use jsompiler_lexer::symbol::{
+    ContextualKeywordToken, DelimiterToken, KeywordToken, LiteralToken, OperatorToken, Token,
+};
 
 #[derive(Debug, Clone)]
 pub struct LetStatement {
@@ -12,7 +14,7 @@ pub struct LetStatement {
 
 impl Parser {
     pub fn parse_let_statement(&mut self) -> Result<Vec<Option<Statement>>, Vec<Error>> {
-        if !self.match_token(&Token::Keyword(KeywordToken::Let))
+        if !self.match_token(&Token::ContextualKeyword(ContextualKeywordToken::Let))
             && !self.match_token(&Token::Keyword(KeywordToken::Var))
             && !self.match_token(&Token::Keyword(KeywordToken::Const))
         {

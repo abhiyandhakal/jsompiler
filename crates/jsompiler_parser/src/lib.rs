@@ -21,7 +21,8 @@ use while_statement::WhileStatement;
 
 use jsompiler_common::{Error, ErrorKind};
 use jsompiler_lexer::symbol::{
-    DelimiterToken, KeywordToken, Lexeme, LiteralToken, OperatorToken, Token,
+    ContextualKeywordToken, DelimiterToken, KeywordToken, Lexeme, LiteralToken, OperatorToken,
+    Token,
 };
 
 #[derive(Debug)]
@@ -107,7 +108,7 @@ impl Parser {
                     self.parse_expression()
                 }
             }
-            Token::Keyword(KeywordToken::Let)
+            Token::ContextualKeyword(ContextualKeywordToken::Let)
             | Token::Keyword(KeywordToken::Var)
             | Token::Keyword(KeywordToken::Const) => {
                 let stmts = self.parse_let_statement()?;

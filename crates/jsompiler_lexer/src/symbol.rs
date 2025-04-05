@@ -24,19 +24,27 @@ pub enum Token {
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum KeywordToken {
+    Switch,
+    Null,
     Const,
-    Let,
     Var,
     Function,
+    Void,
     Return,
+    Typeof,
     If,
+    In,
     Else,
+    Instanceof,
     While,
     For,
     Break,
     Continue,
-    // Additional keywords
+    Debugger,
+    Case,
     Class,
+    Delete,
+    Do,
     New,
     This,
     Super,
@@ -47,12 +55,19 @@ pub enum KeywordToken {
     Catch,
     Finally,
     Throw,
+    Enum,
+    Extends,
+    Exports,
+    False,
+    True,
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum ContextualKeywordToken {
     Get,
     Set,
+    Meta,
+    Target,
     Async,
     Await,
     From,
@@ -61,6 +76,13 @@ pub enum ContextualKeywordToken {
     Yield,
     Static,
     With,
+    Implements,
+    Let,
+    Interface,
+    Package,
+    Private,
+    Protected,
+    Public,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -164,30 +186,27 @@ lazy_static! {
 
         // Keywords
         m.insert("const", lexeme("const".to_string(), Token::Keyword(KeywordToken::Const)));
-        m.insert("let", lexeme("let".to_string(), Token::Keyword(KeywordToken::Let)));
         m.insert("var", lexeme("var".to_string(), Token::Keyword(KeywordToken::Var)));
         m.insert("function", lexeme("function".to_string(), Token::Keyword(KeywordToken::Function)));
+        m.insert("void", lexeme("void".to_string(), Token::Keyword(KeywordToken::Void)));
+        m.insert("typeof", lexeme("typeof".to_string(), Token::Keyword(KeywordToken::Typeof)));
         m.insert("return", lexeme("return".to_string(), Token::Keyword(KeywordToken::Return)));
         m.insert("if", lexeme("if".to_string(), Token::Keyword(KeywordToken::If)));
         m.insert("else", lexeme("else".to_string(), Token::Keyword(KeywordToken::Else)));
+        m.insert("instanceof", lexeme("instanceof".to_string(), Token::Keyword(KeywordToken::Instanceof)));
+        m.insert("in", lexeme("in".to_string(), Token::Keyword(KeywordToken::In)));
         m.insert("while", lexeme("while".to_string(), Token::Keyword(KeywordToken::While)));
         m.insert("for", lexeme("for".to_string(), Token::Keyword(KeywordToken::For)));
+        m.insert("do", lexeme("do".to_string(), Token::Keyword(KeywordToken::Do)));
+        m.insert("true", lexeme("true".to_string(), Token::Keyword(KeywordToken::True)));
+        m.insert("false", lexeme("false".to_string(), Token::Keyword(KeywordToken::False)));
+        m.insert("exports", lexeme("exports".to_string(), Token::Keyword(KeywordToken::Exports)));
         m.insert("break", lexeme("break".to_string(), Token::Keyword(KeywordToken::Break)));
         m.insert("continue", lexeme("continue".to_string(), Token::Keyword(KeywordToken::Continue)));
-
-        // Contextual keywords
-        m.insert("get", lexeme("get".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Get)));
-        m.insert("set", lexeme("set".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Set)));
-        m.insert("async", lexeme("async".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Async)));
-        m.insert("await", lexeme("await".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Await)));
-        m.insert("from", lexeme("from".to_string(), Token::ContextualKeyword(ContextualKeywordToken::From)));
-        m.insert("as", lexeme("as".to_string(), Token::ContextualKeyword(ContextualKeywordToken::As)));
-        m.insert("of", lexeme("of".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Of)));
-        m.insert("yield", lexeme("yield".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Yield)));
-        m.insert("static", lexeme("static".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Static)));
-        m.insert("with", lexeme("with".to_string(), Token::ContextualKeyword(ContextualKeywordToken::With)));
-
-        // Additional keywords
+        m.insert("switch", lexeme("switch".to_string(), Token::Keyword(KeywordToken::Switch)));
+        m.insert("null", lexeme("null".to_string(), Token::Keyword(KeywordToken::Null)));
+        m.insert("case", lexeme("case".to_string(), Token::Keyword(KeywordToken::Case)));
+        m.insert("debugger", lexeme("debugger".to_string(), Token::Keyword(KeywordToken::Debugger)));
         m.insert("class", lexeme("class".to_string(), Token::Keyword(KeywordToken::Class)));
         m.insert("new", lexeme("new".to_string(), Token::Keyword(KeywordToken::New)));
         m.insert("this", lexeme("this".to_string(), Token::Keyword(KeywordToken::This)));
@@ -199,6 +218,30 @@ lazy_static! {
         m.insert("catch", lexeme("catch".to_string(), Token::Keyword(KeywordToken::Catch)));
         m.insert("finally", lexeme("finally".to_string(), Token::Keyword(KeywordToken::Finally)));
         m.insert("throw", lexeme("throw".to_string(), Token::Keyword(KeywordToken::Throw)));
+        m.insert("enum", lexeme("enum".to_string(), Token::Keyword(KeywordToken::Enum)));
+        m.insert("extends", lexeme("extends".to_string(), Token::Keyword(KeywordToken::Extends)));
+        m.insert("delete", lexeme("delete".to_string(), Token::Keyword(KeywordToken::Delete)));
+
+        // Contextual keywords
+        m.insert("let", lexeme("let".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Let)));
+        m.insert("package", lexeme("package".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Package)));
+        m.insert("interface", lexeme("interface".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Interface)));
+        m.insert("get", lexeme("get".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Get)));
+        m.insert("set", lexeme("set".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Set)));
+        m.insert("public", lexeme("public".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Public)));
+        m.insert("protected", lexeme("protected".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Protected)));
+        m.insert("private", lexeme("private".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Private)));
+        m.insert("meta", lexeme("meta".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Meta)));
+        m.insert("target", lexeme("target".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Target)));
+        m.insert("async", lexeme("async".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Async)));
+        m.insert("await", lexeme("await".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Await)));
+        m.insert("from", lexeme("from".to_string(), Token::ContextualKeyword(ContextualKeywordToken::From)));
+        m.insert("as", lexeme("as".to_string(), Token::ContextualKeyword(ContextualKeywordToken::As)));
+        m.insert("of", lexeme("of".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Of)));
+        m.insert("yield", lexeme("yield".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Yield)));
+        m.insert("static", lexeme("static".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Static)));
+        m.insert("with", lexeme("with".to_string(), Token::ContextualKeyword(ContextualKeywordToken::With)));
+        m.insert("implements", lexeme("implements".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Implements)));
 
         // Operators
         m.insert("+", lexeme("+".to_string(), Token::Operator(OperatorToken::Plus)));

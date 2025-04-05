@@ -1,6 +1,7 @@
 #[allow(unused_imports)]
 use super::symbol::{
-    CommentToken, DelimiterToken, KeywordToken, LiteralToken, NumberLiteral, OperatorToken,
+    CommentToken, ContextualKeywordToken, DelimiterToken, KeywordToken, LiteralToken,
+    NumberLiteral, OperatorToken,
 };
 #[allow(unused_imports)]
 use super::{Lexer, Token};
@@ -18,7 +19,7 @@ fn test_lexer_var_declaration() {
             .map(|l| l.token.clone())
             .collect::<Vec<_>>(),
         vec![
-            Token::Keyword(KeywordToken::Let),
+            Token::ContextualKeyword(ContextualKeywordToken::Let),
             Token::Identifier("x".to_string()),
             Token::Operator(OperatorToken::EqualTo),
             Token::Literal(LiteralToken::Number(NumberLiteral::Value(5_f64))),
@@ -41,7 +42,7 @@ fn test_lexer_var_declaration_no_semicolon() {
             .map(|l| l.token.clone())
             .collect::<Vec<_>>(),
         vec![
-            Token::Keyword(KeywordToken::Let),
+            Token::ContextualKeyword(ContextualKeywordToken::Let),
             Token::Identifier("x".to_string()),
             Token::Operator(OperatorToken::EqualTo),
             Token::Literal(LiteralToken::Number(NumberLiteral::Value(5_f64))),
@@ -63,7 +64,7 @@ fn test_lexer_string_concat() {
             .map(|l| l.token.clone())
             .collect::<Vec<_>>(),
         vec![
-            Token::Keyword(KeywordToken::Let),
+            Token::ContextualKeyword(ContextualKeywordToken::Let),
             Token::Identifier("msg".to_string()),
             Token::Operator(OperatorToken::EqualTo),
             Token::Literal(LiteralToken::String("hello".to_string())),
@@ -90,7 +91,7 @@ fn test_lexer_arithmetic() {
             .map(|l| l.token.clone())
             .collect::<Vec<_>>(),
         vec![
-            Token::Keyword(KeywordToken::Let),
+            Token::ContextualKeyword(ContextualKeywordToken::Let),
             Token::Identifier("result".to_string()),
             Token::Operator(OperatorToken::EqualTo),
             Token::Delimiter(DelimiterToken::OpenParen),
@@ -205,7 +206,7 @@ fn test_template_string() {
             .map(|l| l.token.clone())
             .collect::<Vec<_>>(),
         vec![
-            Token::Keyword(KeywordToken::Let),
+            Token::ContextualKeyword(ContextualKeywordToken::Let),
             Token::Identifier("x".to_string()),
             Token::Operator(OperatorToken::EqualTo),
             Token::Delimiter(DelimiterToken::Tilde),
