@@ -83,6 +83,8 @@ pub enum ContextualKeywordToken {
     Private,
     Protected,
     Public,
+    Eval,
+    Arguments,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -228,7 +230,9 @@ lazy_static! {
         m.insert("interface", lexeme("interface".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Interface)));
         m.insert("get", lexeme("get".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Get)));
         m.insert("set", lexeme("set".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Set)));
+        m.insert("arguments", lexeme("arguments".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Arguments)));
         m.insert("public", lexeme("public".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Public)));
+        m.insert("eval", lexeme("eval".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Eval)));
         m.insert("protected", lexeme("protected".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Protected)));
         m.insert("private", lexeme("private".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Private)));
         m.insert("meta", lexeme("meta".to_string(), Token::ContextualKeyword(ContextualKeywordToken::Meta)));
