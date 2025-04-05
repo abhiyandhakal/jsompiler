@@ -125,12 +125,13 @@ pub enum DelimiterToken {
     Comma,        // ,
     Dot,          // .
     NewLine,      // \n
+    Tilde,        // `
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum LiteralToken {
     Number(NumberLiteral),
-    String(StringLiteral),
+    String(String),
     Boolean(bool),
     Null,
     Undefined,
@@ -141,12 +142,6 @@ pub enum NumberLiteral {
     Value(f64),
     NaN,
     Infinity,
-}
-
-#[derive(Debug, PartialEq, Clone)]
-pub enum StringLiteral {
-    Regular(String),  // 'string' or "string"
-    Template(String), // `string`
 }
 
 #[derive(Debug, PartialEq, Clone)]
