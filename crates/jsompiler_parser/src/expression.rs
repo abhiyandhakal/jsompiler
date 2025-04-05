@@ -1,4 +1,5 @@
 use super::{Identifier, Parser, Statement};
+use crate::object_expression::Property;
 use crate::{Error, ErrorKind};
 use jsompiler_lexer::symbol::{DelimiterToken, Lexeme, LiteralToken, OperatorToken, Token};
 
@@ -22,6 +23,9 @@ pub enum Expression {
     },
     ArrayLiteral {
         elements: Vec<Expression>,
+    },
+    ObjectLiteral {
+        properties: Vec<Property>,
     },
 }
 
@@ -62,6 +66,9 @@ impl Parser {
         // Parse array expression
         if self.peek().token == Token::Delimiter(DelimiterToken::OpenBracket) {
             return self.array_expression();
+        }
+        if self.peek().token == Token::Delimiter(DelimiterToken::OpenBrace) {
+            return self.parse_object_expression();
         }
 
         self.comparison() // Start from highest precedence binary operations

@@ -5,6 +5,7 @@ mod for_loop_statement;
 mod function_statement;
 mod if_statement;
 mod let_statement;
+mod object_expression;
 mod return_statement;
 mod while_statement;
 
@@ -67,7 +68,6 @@ impl Parser {
 
     pub fn parse(&mut self) {
         while !self.is_at_end() {
-            println!("peeking: {:?}", self.peek().token);
             match &self.peek().token {
                 Token::Delimiter(DelimiterToken::Semicolon)
                 | Token::Delimiter(DelimiterToken::NewLine)
@@ -111,7 +111,6 @@ impl Parser {
             | Token::Keyword(KeywordToken::Var)
             | Token::Keyword(KeywordToken::Const) => {
                 let stmts = self.parse_let_statement()?;
-                println!("stmts: {:#?}", stmts);
                 for stmt in stmts {
                     let stmt = stmt.unwrap();
                     self.ast.push(Node::Statement(stmt));
@@ -123,7 +122,7 @@ impl Parser {
             Token::Keyword(KeywordToken::While) => self.parse_while_statement(),
             Token::Keyword(KeywordToken::For) => self.parser_for_loop_statement(),
             Token::Keyword(KeywordToken::Function) => self.parse_function_statement(),
-            Token::Delimiter(DelimiterToken::OpenBrace) => self.parse_block_statement(),
+            Token::Delimiter(DelimiterToken::OpenBrace) => self.parse_brace_block_or_object(),
             Token::Delimiter(DelimiterToken::OpenParen) => self.parenthesis_expression(),
             _ => Err(vec![Error {
                 error_kind: ErrorKind::UnexpectedToken,
