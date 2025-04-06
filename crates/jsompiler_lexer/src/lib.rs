@@ -34,6 +34,10 @@ impl Lexer {
         self.current > self.source.len()
     }
 
+    fn is_at_end(&self) -> bool {
+        self.current >= self.source.len()
+    }
+
     fn get_current_char(&self) -> char {
         if self.current >= self.source.len() {
             '\0'
