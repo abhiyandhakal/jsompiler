@@ -2,7 +2,7 @@ use jsompiler_common::{Error, ErrorKind};
 
 use crate::{
     Lexer,
-    symbol::{self, Lexeme, SYMBOLS},
+    symbol::{self, Lexeme, SYMBOLS, Token, lexeme},
 };
 
 impl Lexer {
@@ -18,6 +18,45 @@ impl Lexer {
                         error_kind: ErrorKind::LexerError,
                     });
                 }
+            }
+        }
+
+        if let Some(last_token) = self.tokens.last() {
+            if let Token::Operator(_) = last_token.token {
+                loop {
+                    if self.get_current_char() == '\0' || self.get_current_char() == '\n' {
+                        return Err(Error {
+                            error_kind: ErrorKind::LexerError,
+                            message: "Regex not closed.".to_string(),
+                            line_number: self.line_number,
+                            pos: self.current,
+                        });
+                    }
+
+                    if self.get_current_char() == '/' {
+                        break;
+                    }
+                    self.advance();
+                }
+                let pattern = self.source[self.start + 1..self.current]
+                    .iter()
+                    .collect::<String>();
+                let flags_start = self.current;
+                self.advance();
+                loop {
+                    if self.get_current_char().is_alphabetic() {
+                        self.advance();
+                    } else {
+                        break;
+                    }
+                }
+                let flags = self.source[flags_start + 1..self.current]
+                    .iter()
+                    .collect::<String>();
+                return Ok(Some(lexeme(
+                    self.source[self.start..self.current].iter().collect(),
+                    Token::RegExp { pattern, flags },
+                )));
             }
         }
 

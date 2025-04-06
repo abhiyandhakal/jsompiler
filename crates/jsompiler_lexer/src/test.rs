@@ -355,3 +355,38 @@ fn test_escape_characters_in_string() {
         ]
     );
 }
+
+#[test]
+fn test_regex() {
+    let input = "x = /ab2+c/; y = /abc/gi.collect()";
+    let mut lexer = Lexer::new(input.to_string());
+    lexer.scan_all_tokens();
+    assert_eq!(lexer.errors, vec![]);
+    assert_eq!(
+        lexer
+            .tokens
+            .iter()
+            .map(|l| l.token.clone())
+            .collect::<Vec<_>>(),
+        vec![
+            Token::Identifier("x".to_string()),
+            Token::Operator(OperatorToken::EqualTo),
+            Token::RegExp {
+                pattern: "ab2+c".to_owned(),
+                flags: "".to_owned()
+            },
+            Token::Delimiter(DelimiterToken::Semicolon),
+            Token::Identifier("y".to_string()),
+            Token::Operator(OperatorToken::EqualTo),
+            Token::RegExp {
+                pattern: "abc".to_owned(),
+                flags: "gi".to_owned()
+            },
+            Token::Delimiter(DelimiterToken::Dot),
+            Token::Identifier("collect".to_string()),
+            Token::Delimiter(DelimiterToken::OpenParen),
+            Token::Delimiter(DelimiterToken::CloseParen),
+            Token::EOF
+        ]
+    );
+}
