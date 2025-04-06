@@ -296,8 +296,8 @@ fn test_unary() {
 }
 
 #[test]
-fn test_hex_value() {
-    let input = "x = 0x123;";
+fn test_base_values() {
+    let input = "x = 0x123; x = 0o123; x = 0b1";
     let mut lexer = Lexer::new(input.to_string());
     lexer.scan_all_tokens();
     assert_eq!(lexer.errors, vec![]);
@@ -312,6 +312,13 @@ fn test_hex_value() {
             Token::Operator(OperatorToken::EqualTo),
             Token::Literal(LiteralToken::Number(NumberLiteral::Value(291_f64))),
             Token::Delimiter(DelimiterToken::Semicolon),
+            Token::Identifier("x".to_string()),
+            Token::Operator(OperatorToken::EqualTo),
+            Token::Literal(LiteralToken::Number(NumberLiteral::Value(83_f64))),
+            Token::Delimiter(DelimiterToken::Semicolon),
+            Token::Identifier("x".to_string()),
+            Token::Operator(OperatorToken::EqualTo),
+            Token::Literal(LiteralToken::Number(NumberLiteral::Value(1_f64))),
             Token::EOF
         ]
     );
