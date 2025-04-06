@@ -103,13 +103,15 @@ impl Lexer {
                 Ok(None) => {}
                 Err(error) => {
                     self.errors.push(error);
-                    self.go_to_new_line();
+                    if !self.go_to_new_line() {
+                        break;
+                    }
                 }
             }
         }
     }
 
-    fn go_to_new_line(&mut self) {
+    fn go_to_new_line(&mut self) -> bool {
         if let Some(index) = self
             .source
             .iter()
@@ -119,9 +121,11 @@ impl Lexer {
         {
             self.start = index + 1;
             self.current = index + 1;
+            true
         } else {
             self.start = self.source.len();
             self.current = self.source.len();
+            false
         }
     }
 
