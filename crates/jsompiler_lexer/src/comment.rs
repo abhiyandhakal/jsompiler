@@ -13,7 +13,7 @@ impl Lexer {
                 // Single Line Comment
                 '/' => {
                     loop {
-                        if self.get_current_char() == '\n' {
+                        if self.get_current_char() == '\n' || self.is_at_end() {
                             break;
                         }
                         self.advance();
