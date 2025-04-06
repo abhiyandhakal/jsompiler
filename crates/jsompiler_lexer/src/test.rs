@@ -397,3 +397,19 @@ fn test_regex() {
         ]
     );
 }
+
+#[test]
+fn test_invalid_regex() {
+    let inputs = vec![
+        "x = //", // Empty regex
+        "x = /*/", // Invalid first char
+        "x = ///", // Invalid first char
+        "x = /abc", // Unclosed regex
+    ];
+
+    for input in inputs {
+        let mut lexer = Lexer::new(input.to_string());
+        lexer.scan_all_tokens();
+        assert_ne!(lexer.errors, vec![], "Input '{}' should produce errors", input);
+    }
+}

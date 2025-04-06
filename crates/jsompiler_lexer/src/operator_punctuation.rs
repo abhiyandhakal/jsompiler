@@ -21,10 +21,28 @@ impl Lexer {
             }
         }
 
+        // Handle regex
         if let Some(last_token) = self.tokens.last() {
             if let Token::Operator(_) = last_token.token {
+                // Check for empty regex
+                if self.current + 1 < self.source.len() && self.source[self.current + 1] == '/' {
+                    return Err(Error {
+                        error_kind: ErrorKind::LexerError,
+                        message: "Empty regular expression literals are not allowed. Use /(?:)/ instead.".to_string(),
+                        line_number: self.line_number,
+                        pos: self.current,
+                    });
+                }
+
+                let mut in_class: bool = false;
+                let mut escaped = false;
+
+                // Parse regex body
                 loop {
-                    if self.get_current_char() == '\0' || self.get_current_char() == '\n' {
+                    self.advance();
+                    let c = self.get_current_char();
+                    
+                    if c == '\0' || c == '\n' {
                         return Err(Error {
                             error_kind: ErrorKind::LexerError,
                             message: "Regex not closed.".to_string(),
@@ -33,40 +51,51 @@ impl Lexer {
                         });
                     }
 
-                    if self.get_current_char() == '/' {
-                        break;
+                    // Handle first character restrictions
+                    if self.current == self.start + 1 {
+                        if c == '*' || c == '/' {
+                            return Err(Error {
+                                error_kind: ErrorKind::LexerError,
+                                message: format!("Invalid first character in regex: '{}'", c),
+                                line_number: self.line_number,
+                                pos: self.current,
+                            });
+                        }
                     }
-                    self.advance();
+
+                    if escaped {
+                        escaped = false;
+                    } else {
+                        match c {
+                            '\\' => escaped = true,
+                            '[' if !in_class => in_class = true,
+                            ']' if in_class => in_class = false,
+                            '/' if !in_class => break,
+                            _ => {}
+                        }
+                    }
                 }
+
                 let pattern = self.source[self.start + 1..self.current]
                     .iter()
                     .collect::<String>();
 
-                if pattern.starts_with('*')
-                    || pattern.starts_with('/')
-                    || pattern.starts_with('\\')
-                    || pattern.starts_with('[')
-                {
-                    return Err(Error {
-                        pos: self.start,
-                        line_number: self.line_number,
-                        message: format!("Invalid regex: {pattern}"),
-                        error_kind: ErrorKind::LexerError,
-                    });
-                }
-
+                // Parse flags
                 let flags_start = self.current;
                 self.advance();
+                
                 loop {
-                    if self.get_current_char().is_alphabetic() {
-                        self.advance();
-                    } else {
+                    let c = self.get_current_char();
+                    if !c.is_alphabetic() {
                         break;
                     }
+                    self.advance();
                 }
+
                 let flags = self.source[flags_start + 1..self.current]
                     .iter()
                     .collect::<String>();
+
                 return Ok(Some(lexeme(
                     self.source[self.start..self.current].iter().collect(),
                     Token::RegExp { pattern, flags },
