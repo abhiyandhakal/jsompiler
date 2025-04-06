@@ -1,7 +1,10 @@
 use super::{Identifier, Parser, Statement};
+use crate::class_expression::ClassExpression;
 use crate::object_expression::Property;
 use crate::{Error, ErrorKind};
-use jsompiler_lexer::symbol::{DelimiterToken, Lexeme, LiteralToken, OperatorToken, Token};
+use jsompiler_lexer::symbol::{
+    DelimiterToken, KeywordToken, Lexeme, LiteralToken, OperatorToken, Token,
+};
 
 #[derive(Debug, Clone)]
 pub enum Expression {
@@ -27,6 +30,7 @@ pub enum Expression {
     ObjectLiteral {
         properties: Vec<Property>,
     },
+    ClassExpression(ClassExpression),
 }
 
 impl Parser {
@@ -69,6 +73,9 @@ impl Parser {
         }
         if self.peek().token == Token::Delimiter(DelimiterToken::OpenBrace) {
             return self.parse_object_expression();
+        }
+        if self.peek().token == Token::Keyword(KeywordToken::Class) {
+            return self.parse_class_expression();
         }
 
         self.comparison() // Start from highest precedence binary operations
