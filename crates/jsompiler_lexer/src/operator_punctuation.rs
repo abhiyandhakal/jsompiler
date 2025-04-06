@@ -41,6 +41,20 @@ impl Lexer {
                 let pattern = self.source[self.start + 1..self.current]
                     .iter()
                     .collect::<String>();
+
+                if pattern.starts_with('*')
+                    || pattern.starts_with('/')
+                    || pattern.starts_with('\\')
+                    || pattern.starts_with('[')
+                {
+                    return Err(Error {
+                        pos: self.start,
+                        line_number: self.line_number,
+                        message: format!("Invalid regex: {pattern}"),
+                        error_kind: ErrorKind::LexerError,
+                    });
+                }
+
                 let flags_start = self.current;
                 self.advance();
                 loop {
