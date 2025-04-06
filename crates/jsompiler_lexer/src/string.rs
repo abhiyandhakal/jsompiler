@@ -134,6 +134,22 @@ impl Lexer {
                         processed_string.push('\t');
                         self.advance(); // Skip `\`
                     }
+                    'r' => {
+                        processed_string.push('\r');
+                        self.advance(); // Skip `\`
+                    }
+                    'f' => {
+                        processed_string.push('\u{000C}');
+                        self.advance(); // Skip `\`
+                    }
+                    'v' => {
+                        processed_string.push('\u{000B}');
+                        self.advance(); // Skip `\`
+                    }
+                    'b' => {
+                        processed_string.push('\u{0008}');
+                        self.advance(); // Skip `\`
+                    }
                     c => {
                         if c == ch {
                             processed_string.push(ch);
