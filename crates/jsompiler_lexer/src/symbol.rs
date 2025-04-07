@@ -16,6 +16,7 @@ pub enum Token {
     Literal(LiteralToken),
     Comment(CommentToken),
     Identifier(String),
+    PrivateIdentifier(String),
     WhiteSpace(String),
     RegExp { pattern: String, flags: String },
     ContextualKeyword(ContextualKeywordToken),

@@ -66,27 +66,36 @@ impl Lexer {
 
         self.skip_whitespaces();
         self.start = self.current;
-        let c = self.advance();
+
+        let c = self.get_current_char();
 
         match c {
-            // New Line
             '\n' => {
-                // self.advance();
+                self.advance(); // only advance here
                 Ok(Some(lexeme(
                     "\n".to_string(),
                     Token::Delimiter(DelimiterToken::NewLine),
                 )))
             }
-            // Numbers
             '0'..='9' => self.lex_number(),
-            // Keywords and identifiers
-            'a'..='z' | 'A'..='Z' | '_' | '$' => self.lex_identifier(),
-            // String
-            '`' => self.lex_template_string(),
-            '"' => self.lex_string('"'),
-            '\'' => self.lex_string('\''),
-            '/' => self.lex_comment(),
-            c => self.lex_operator_punctuation(c),
+            'a'..='z' | 'A'..='Z' | '_' | '$' | '#' => self.lex_identifier(), // consume inside
+            '`' => {
+                self.advance();
+                self.lex_template_string()
+            }
+            '"' => {
+                self.advance();
+                self.lex_string('"')
+            }
+            '\'' => {
+                self.advance();
+                self.lex_string('\'')
+            }
+            '/' => self.lex_comment(), // lex_comment handles advancing
+            _ => {
+                let c = self.advance();
+                self.lex_operator_punctuation(c)
+            } // advance here and pass the char
         }
     }
 
