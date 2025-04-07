@@ -1,5 +1,6 @@
 mod assignment_statement;
 mod block_statement;
+mod class_expression;
 mod expression;
 mod for_loop_statement;
 mod function_statement;
@@ -100,6 +101,7 @@ impl Parser {
             }
             Token::Literal(_)
             | Token::Operator(_)
+            | Token::Keyword(KeywordToken::Class)
             | Token::Delimiter(DelimiterToken::OpenBracket) => self.parse_expression(),
             Token::Identifier(_) => {
                 if self.next().token == Token::Operator(OperatorToken::EqualTo) {
