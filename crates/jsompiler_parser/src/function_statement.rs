@@ -36,6 +36,30 @@ impl Parser {
             }]);
         };
 
+        let parameters = self.parse_function_parameters()?;
+
+        // Expect '{' (Start of function body)
+        if !self.match_token(&Token::Delimiter(DelimiterToken::OpenBrace)) {
+            return Err(vec![Error {
+                error_kind: ErrorKind::UnexpectedToken,
+                message: "Expected '{' before function body".to_string(),
+                line_number: 1,
+                pos: 2,
+            }]);
+        }
+
+        // Parse function body (a block statement)
+        let body = self.parse_block_statement()?;
+
+        // Return FunctionStatement node
+        Ok(Some(Statement::FunctionStatement(FunctionStatement {
+            name,
+            parameters,
+            body: Box::new(body),
+        })))
+    }
+
+    pub fn parse_function_parameters(&mut self) -> Result<Vec<Identifier>, Vec<Error>> {
         // Expect '('
         if !self.match_token(&Token::Delimiter(
             jsompiler_lexer::symbol::DelimiterToken::OpenParen,
@@ -72,24 +96,6 @@ impl Parser {
             }]);
         }
 
-        // Expect '{' (Start of function body)
-        if !self.match_token(&Token::Delimiter(DelimiterToken::OpenBrace)) {
-            return Err(vec![Error {
-                error_kind: ErrorKind::UnexpectedToken,
-                message: "Expected '{' before function body".to_string(),
-                line_number: 1,
-                pos: 2,
-            }]);
-        }
-
-        // Parse function body (a block statement)
-        let body = self.parse_block_statement()?;
-
-        // Return FunctionStatement node
-        Ok(Some(Statement::FunctionStatement(FunctionStatement {
-            name,
-            parameters,
-            body: Box::new(body),
-        })))
+        Ok(parameters)
     }
 }
