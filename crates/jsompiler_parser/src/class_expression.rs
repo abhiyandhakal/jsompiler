@@ -25,7 +25,7 @@ pub enum ClassElement {
         is_static: bool,
     },
     StaticBlock {
-        body: Vec<Statement>,
+        body: Option<Statement>,
     },
 }
 
@@ -85,7 +85,6 @@ impl Parser {
     }
 
     fn parse_class_body(&mut self) -> Result<Vec<ClassElement>, Vec<Error>> {
-        println!("Parsing class body");
         self.advance(); // Consume '{'
 
         while self.peek().token == Token::Delimiter(DelimiterToken::NewLine)
@@ -128,7 +127,6 @@ impl Parser {
 
     // Parse a single class element (method, field, or static block)
     fn parse_class_element(&mut self) -> Result<ClassElement, Vec<Error>> {
-        println!("Parsing class element");
         let is_static =
             if self.peek().token == Token::ContextualKeyword(ContextualKeywordToken::Static) {
                 self.advance();
@@ -137,8 +135,15 @@ impl Parser {
                 false
             };
 
+        if is_static && self.peek().token == Token::Delimiter(DelimiterToken::OpenBrace) {
+            return self.parse_static_block();
+        }
+
         let name = match self.peek().token {
             Token::Identifier(_) => ClassElementName::PropertyName(self.peek().text.clone()),
+            Token::PrivateIdentifier(_) => {
+                ClassElementName::PrivateIdentifier(self.peek().text.clone())
+            }
             Token::Literal(LiteralToken::String(_)) => {
                 ClassElementName::PropertyName(self.peek().text.clone())
             }
@@ -151,8 +156,6 @@ impl Parser {
                 }])
             }
         };
-
-        println!("Class element name: {:?}", name);
 
         self.advance(); // Consume the name
 
@@ -188,5 +191,10 @@ impl Parser {
                 is_static,
             })
         }
+    }
+
+    fn parse_static_block(&mut self) -> Result<ClassElement, Vec<Error>> {
+        let body = self.parse_block_statement()?;
+        Ok(ClassElement::StaticBlock { body })
     }
 }
