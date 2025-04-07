@@ -16,7 +16,7 @@ pub enum ClassElement {
     MethodDefinition {
         name: ClassElementName,
         params: Vec<Identifier>,
-        body: Vec<Statement>,
+        body: Option<Statement>,
         is_static: bool,
     },
     FieldDefinition {
@@ -160,7 +160,7 @@ impl Parser {
         self.advance(); // Consume the name
 
         if self.peek().token == Token::Delimiter(DelimiterToken::OpenParen) {
-            unimplemented!();
+            return self.parse_method(name, is_static);
         } else {
             // Field definition
             let value = if self.peek().token == Token::Operator(OperatorToken::EqualTo) {
@@ -196,5 +196,23 @@ impl Parser {
     fn parse_static_block(&mut self) -> Result<ClassElement, Vec<Error>> {
         let body = self.parse_block_statement()?;
         Ok(ClassElement::StaticBlock { body })
+    }
+
+    fn parse_method(
+        &mut self,
+        name: ClassElementName,
+        is_static: bool,
+    ) -> Result<ClassElement, Vec<Error>> {
+        let params = self.parse_function_parameters()?;
+
+        let body = self.parse_block_statement()?;
+        println!("Parsed method body: {:#?}", body);
+
+        Ok(ClassElement::MethodDefinition {
+            name,
+            params,
+            body,
+            is_static,
+        })
     }
 }
