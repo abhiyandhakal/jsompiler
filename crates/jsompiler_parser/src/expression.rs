@@ -126,6 +126,12 @@ impl Parser {
 
         if let Token::Identifier(_) = self.peek().token {
             self.advance();
+
+            // Check if it's a member access
+            if self.peek().token == Token::Delimiter(DelimiterToken::Dot) {
+                return self.parse_member_access(self.previous().clone());
+            }
+
             // Check if it's a function call
             if self.peek().token == Token::Delimiter(DelimiterToken::OpenParen) {
                 return self.parse_function_call(self.previous().clone());
@@ -340,6 +346,28 @@ impl Parser {
                 line_number: 1,
                 pos: 2,
             }]),
+        }
+    }
+
+    fn parse_member_access(&mut self, object: Lexeme) -> Result<Expression, Vec<Error>> {
+        self.advance(); // Consume the dot
+
+        if let Token::Identifier(_) = self.peek().token {
+            let property = self.expression()?;
+            Ok(Expression::MemberAccess {
+                object: Box::new(Expression::Identifier(Identifier {
+                    token: object.clone(),
+                    value: object.text.clone(),
+                })),
+                property: Box::new(property),
+            })
+        } else {
+            Err(vec![Error {
+                error_kind: ErrorKind::UnexpectedToken,
+                message: "Expected identifier after '.'".to_string(),
+                line_number: 1,
+                pos: 2,
+            }])
         }
     }
 }
