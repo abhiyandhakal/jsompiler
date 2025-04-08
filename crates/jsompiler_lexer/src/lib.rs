@@ -38,6 +38,10 @@ impl Lexer {
         self.current >= self.source.len()
     }
 
+    fn peek_next_char(&self) -> Option<char> {
+        self.source.get(self.current + 1).copied()
+    }
+
     fn get_current_char(&self) -> char {
         if self.current >= self.source.len() {
             '\0'
