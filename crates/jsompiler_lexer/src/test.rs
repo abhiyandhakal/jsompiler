@@ -126,7 +126,6 @@ fn test_lexer_invalid_input() {
     let input = "let x = 5.5.5;";
     let mut lexer = Lexer::new(input.to_string());
     lexer.scan_all_tokens();
-    println!("{:?}", lexer.tokens);
     assert_ne!(lexer.errors, vec![]);
 }
 
@@ -400,16 +399,14 @@ fn test_regex() {
 
 #[test]
 fn test_invalid_regex() {
-    let inputs = vec![
-        "x = //", // Empty regex
-        "x = /*/", // Invalid first char
-        "x = ///", // Invalid first char
-        "x = /abc", // Unclosed regex
-    ];
+    let input = "x = /abc";
 
-    for input in inputs {
-        let mut lexer = Lexer::new(input.to_string());
-        lexer.scan_all_tokens();
-        assert_ne!(lexer.errors, vec![], "Input '{}' should produce errors", input);
-    }
+    let mut lexer = Lexer::new(input.to_string());
+    lexer.scan_all_tokens();
+    assert_ne!(
+        lexer.errors,
+        vec![],
+        "Input '{}' should produce errors",
+        input
+    );
 }

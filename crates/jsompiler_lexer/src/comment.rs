@@ -62,12 +62,11 @@ impl Lexer {
                     }
                 },
                 // Regex and other operators
-                c => {
-                    return self.lex_operator_punctuation(c);
+                _ => {
+                    return self.lex_operator_punctuation('/');
                 }
             }
         }
-
-        Ok(None)
+        return self.lex_operator_punctuation('/');
     }
 }
