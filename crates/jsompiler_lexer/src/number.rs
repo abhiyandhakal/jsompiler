@@ -20,9 +20,9 @@ impl Lexer {
             ('x', &hex_allowed_chars),
         ];
 
+        self.advance();
         if self.source[self.current - 1] == '0' {
             let current_index = self.current;
-            // if self.get_current_char().to_ascii_lowercase() == 'x' {
             if let Some(&base) = to_check_base
                 .iter()
                 .find(|&&c| c.0 == self.get_current_char().to_ascii_lowercase())
