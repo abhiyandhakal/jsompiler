@@ -10,6 +10,11 @@ use jsompiler_lexer::symbol::{
 pub enum Expression {
     Identifier(Identifier),
     Literal(LiteralToken),
+    ThisExpression,
+    MemberAccess {
+        object: Box<Expression>,
+        property: Box<Expression>,
+    },
     Unary {
         op: Lexeme,
         op_type: String,
@@ -76,6 +81,9 @@ impl Parser {
         }
         if self.peek().token == Token::Keyword(KeywordToken::Class) {
             return self.parse_class_expression();
+        }
+        if self.peek().token == Token::Keyword(KeywordToken::This) {
+            return self.parse_this_expression();
         }
 
         self.comparison() // Start from highest precedence binary operations
@@ -296,5 +304,42 @@ impl Parser {
         }
 
         Ok(Expression::ArrayLiteral { elements })
+    }
+
+    pub fn parse_this_expression(&mut self) -> Result<Expression, Vec<Error>> {
+        if !self.match_token(&Token::Keyword(KeywordToken::This)) {
+            return Err(vec![Error {
+                error_kind: ErrorKind::UnexpectedToken,
+                message: "Expected 'this' keyword".to_string(),
+                line_number: 1,
+                pos: 2,
+            }]);
+        }
+
+        if !self.match_token(&Token::Delimiter(DelimiterToken::Dot)) {
+            return Err(vec![Error {
+                error_kind: ErrorKind::UnexpectedToken,
+                message: "Expected '.' after 'this'".to_string(),
+                line_number: 1,
+                pos: 2,
+            }]);
+        }
+
+        match self.peek().token {
+            Token::Identifier(_) => {
+                let identifier = self.expression()?;
+                Ok(Expression::MemberAccess {
+                    object: Box::new(Expression::ThisExpression),
+                    property: Box::new(identifier),
+                })
+            }
+
+            _ => Err(vec![Error {
+                error_kind: ErrorKind::UnexpectedToken,
+                message: "Expected identifier after 'this.'".to_string(),
+                line_number: 1,
+                pos: 2,
+            }]),
+        }
     }
 }

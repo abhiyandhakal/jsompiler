@@ -103,12 +103,8 @@ impl Parser {
             | Token::Operator(_)
             | Token::Keyword(KeywordToken::Class)
             | Token::Delimiter(DelimiterToken::OpenBracket) => self.parse_expression(),
-            Token::Identifier(_) => {
-                if self.next().token == Token::Operator(OperatorToken::EqualTo) {
-                    self.parse_assignment_statement()
-                } else {
-                    self.parse_expression()
-                }
+            Token::Identifier(_) | Token::Keyword(KeywordToken::This) => {
+                self.parse_assignment_statement()
             }
             Token::ContextualKeyword(ContextualKeywordToken::Let)
             | Token::Keyword(KeywordToken::Var)
