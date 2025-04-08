@@ -2,7 +2,7 @@ use jsompiler_common::{Error, ErrorKind};
 
 use crate::{
     Lexer,
-    symbol::{self, Lexeme, SYMBOLS},
+    symbol::{self, Lexeme, SYMBOLS, Token, lexeme},
 };
 
 impl Lexer {
@@ -21,6 +21,100 @@ impl Lexer {
             }
         }
 
+        // Handle regex
+        if let Some(last_token) = self.tokens.last() {
+            if let Token::Operator(_) = last_token.token {
+                if self.get_current_char() == '/' {
+                    // Check for empty regex
+                    if self.peek_next_char() == Some('/') {
+                        return Err(Error {
+                            error_kind: ErrorKind::LexerError,
+                            message:
+                                "Empty regular expression literals are not allowed. Use /(?:)/ instead."
+                                    .to_string(),
+                            line_number: self.line_number,
+                            pos: self.current,
+                        });
+                    }
+
+                    let mut in_class: bool = false;
+                    let mut escaped = false;
+
+                    // Parse regex body
+                    loop {
+                        self.advance();
+                        let c = self.get_current_char();
+
+                        if c == '\n' || c == '\0' {
+                            return Err(Error {
+                                error_kind: ErrorKind::LexerError,
+                                message: "Regex not closed.".to_string(),
+                                line_number: self.line_number,
+                                pos: self.current,
+                            });
+                        }
+
+                        // Handle first character restrictions
+                        if self.current == self.start + 1 {
+                            if c == '*' || c == '/' {
+                                return Err(Error {
+                                    error_kind: ErrorKind::LexerError,
+                                    message: format!("Invalid first character in regex: '{}'", c),
+                                    line_number: self.line_number,
+                                    pos: self.current,
+                                });
+                            }
+                        }
+
+                        if escaped {
+                            escaped = false;
+                        } else {
+                            match c {
+                                '\\' => escaped = true,
+                                '[' if !in_class => in_class = true,
+                                ']' if in_class => in_class = false,
+                                '/' if !in_class => break,
+                                _ => {}
+                            }
+                        }
+                    }
+
+                    let pattern = self.source[self.start + 1..self.current]
+                        .iter()
+                        .collect::<String>();
+
+                    // Parse flags
+                    let flags_start = self.current;
+                    self.advance();
+
+                    loop {
+                        let c = self.get_current_char();
+                        if !c.is_alphabetic() {
+                            break;
+                        }
+                        if self.is_at_end() {
+                            return Err(Error {
+                                error_kind: ErrorKind::LexerError,
+                                message: "Regex not closed.".to_string(),
+                                line_number: self.line_number,
+                                pos: self.current,
+                            });
+                        }
+                        self.advance();
+                    }
+
+                    let flags = self.source[flags_start + 1..self.current]
+                        .iter()
+                        .collect::<String>();
+
+                    return Ok(Some(lexeme(
+                        self.source[self.start..self.current].iter().collect(),
+                        Token::RegExp { pattern, flags },
+                    )));
+                }
+            }
+        }
+
         if !self.is_beyond_end() {
             let mut longest_match = None;
 
@@ -33,6 +127,11 @@ impl Lexer {
 
                 if let Some(symbol) = SYMBOLS.get(lexeme_slice.as_str()) {
                     longest_match = Some(symbol.clone());
+
+                    if symbol.token == Token::Operator(symbol::OperatorToken::Slash) {
+                        self.advance();
+                    }
+
                     self.current += len - 1;
                     break;
                 }

@@ -7,16 +7,31 @@ use crate::{
 
 impl Lexer {
     pub fn lex_number(&mut self) -> Result<Option<Lexeme>, crate::Error> {
-        // Lex hex value
-        let mut hex_allowed_chars: Vec<_> = ('0'..='9').collect();
-        let hex_alphabets: Vec<_> = ('a'..='f').collect();
-        hex_allowed_chars.extend(hex_alphabets);
+        // Lex value with base (hex, octal, binary)
+        let hex_allowed_chars = [
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
+        ];
+        let octal_allowed_chars = ['0', '1', '2', '3', '4', '5', '6', '7'];
+        let binary_allowed_chars = ['0', '1'];
 
+        let to_check_base: [(char, &[char]); 3] = [
+            ('o', &octal_allowed_chars),
+            ('b', &binary_allowed_chars),
+            ('x', &hex_allowed_chars),
+        ];
+
+        self.advance();
         if self.source[self.current - 1] == '0' {
             let current_index = self.current;
-            if self.get_current_char() == 'x' {
+            if let Some(&base) = to_check_base
+                .iter()
+                .find(|&&c| c.0 == self.get_current_char().to_ascii_lowercase())
+            {
                 self.advance();
-                while hex_allowed_chars.contains(&self.get_current_char()) {
+                while base
+                    .1
+                    .contains(&self.get_current_char().to_ascii_lowercase())
+                {
                     self.advance();
                 }
                 let lexeme_slice: String = self.source[current_index - 1..self.current]
@@ -26,18 +41,37 @@ impl Lexer {
                     return Err(Error {
                         pos: self.current,
                         message: format!(
-                            "Invalid hex value found: {lexeme_slice}{}",
+                            "Invalid {} value found: {}{}",
+                            match base.0 {
+                                'o' => "octal",
+                                'b' => "binary",
+                                'x' => "hex",
+                                _ => unreachable!(),
+                            },
+                            lexeme_slice,
                             self.source[self.current]
                         ),
                         error_kind: ErrorKind::LexerError,
                         line_number: self.line_number,
                     });
                 } else {
-                    let lexeme_f64 = u64::from_str_radix(lexeme_slice.trim_start_matches("0x"), 16);
+                    let lexeme_f64 = u64::from_str_radix(
+                        lexeme_slice.trim_start_matches(format!("0{}", base.0).as_str()),
+                        base.1.len() as u32,
+                    );
                     if !lexeme_f64.is_ok() {
                         return Err(Error {
                             pos: self.current,
-                            message: format!("Invalid hex value found: {lexeme_slice}"),
+                            message: format!(
+                                "Invalid {} value found: {}",
+                                match base.0 {
+                                    'o' => "octal",
+                                    'b' => "binary",
+                                    'x' => "hex",
+                                    _ => unreachable!(),
+                                },
+                                lexeme_slice
+                            ),
                             error_kind: ErrorKind::LexerError,
                             line_number: self.line_number,
                         });

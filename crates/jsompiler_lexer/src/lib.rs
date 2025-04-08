@@ -34,6 +34,14 @@ impl Lexer {
         self.current > self.source.len()
     }
 
+    fn is_at_end(&self) -> bool {
+        self.current >= self.source.len()
+    }
+
+    fn peek_next_char(&self) -> Option<char> {
+        self.source.get(self.current + 1).copied()
+    }
+
     fn get_current_char(&self) -> char {
         if self.current >= self.source.len() {
             '\0'
@@ -112,13 +120,15 @@ impl Lexer {
                 Ok(None) => {}
                 Err(error) => {
                     self.errors.push(error);
-                    self.go_to_new_line();
+                    if !self.go_to_new_line() {
+                        break;
+                    }
                 }
             }
         }
     }
 
-    fn go_to_new_line(&mut self) {
+    fn go_to_new_line(&mut self) -> bool {
         if let Some(index) = self
             .source
             .iter()
@@ -128,9 +138,11 @@ impl Lexer {
         {
             self.start = index + 1;
             self.current = index + 1;
+            true
         } else {
             self.start = self.source.len();
             self.current = self.source.len();
+            false
         }
     }
 

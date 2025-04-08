@@ -126,7 +126,6 @@ fn test_lexer_invalid_input() {
     let input = "let x = 5.5.5;";
     let mut lexer = Lexer::new(input.to_string());
     lexer.scan_all_tokens();
-    println!("{:?}", lexer.tokens);
     assert_ne!(lexer.errors, vec![]);
 }
 
@@ -296,8 +295,8 @@ fn test_unary() {
 }
 
 #[test]
-fn test_hex_value() {
-    let input = "x = 0x123;";
+fn test_base_values() {
+    let input = "x = 0x123; x = 0o123; x = 0b1";
     let mut lexer = Lexer::new(input.to_string());
     lexer.scan_all_tokens();
     assert_eq!(lexer.errors, vec![]);
@@ -312,6 +311,13 @@ fn test_hex_value() {
             Token::Operator(OperatorToken::EqualTo),
             Token::Literal(LiteralToken::Number(NumberLiteral::Value(291_f64))),
             Token::Delimiter(DelimiterToken::Semicolon),
+            Token::Identifier("x".to_string()),
+            Token::Operator(OperatorToken::EqualTo),
+            Token::Literal(LiteralToken::Number(NumberLiteral::Value(83_f64))),
+            Token::Delimiter(DelimiterToken::Semicolon),
+            Token::Identifier("x".to_string()),
+            Token::Operator(OperatorToken::EqualTo),
+            Token::Literal(LiteralToken::Number(NumberLiteral::Value(1_f64))),
             Token::EOF
         ]
     );
@@ -353,5 +359,54 @@ fn test_escape_characters_in_string() {
             Token::Delimiter(DelimiterToken::Tilde),
             Token::EOF
         ]
+    );
+}
+
+#[test]
+fn test_regex() {
+    let input = "x = /ab2+c/; y = /abc/gi.collect()";
+    let mut lexer = Lexer::new(input.to_string());
+    lexer.scan_all_tokens();
+    assert_eq!(lexer.errors, vec![]);
+    assert_eq!(
+        lexer
+            .tokens
+            .iter()
+            .map(|l| l.token.clone())
+            .collect::<Vec<_>>(),
+        vec![
+            Token::Identifier("x".to_string()),
+            Token::Operator(OperatorToken::EqualTo),
+            Token::RegExp {
+                pattern: "ab2+c".to_owned(),
+                flags: "".to_owned()
+            },
+            Token::Delimiter(DelimiterToken::Semicolon),
+            Token::Identifier("y".to_string()),
+            Token::Operator(OperatorToken::EqualTo),
+            Token::RegExp {
+                pattern: "abc".to_owned(),
+                flags: "gi".to_owned()
+            },
+            Token::Delimiter(DelimiterToken::Dot),
+            Token::Identifier("collect".to_string()),
+            Token::Delimiter(DelimiterToken::OpenParen),
+            Token::Delimiter(DelimiterToken::CloseParen),
+            Token::EOF
+        ]
+    );
+}
+
+#[test]
+fn test_invalid_regex() {
+    let input = "x = /abc";
+
+    let mut lexer = Lexer::new(input.to_string());
+    lexer.scan_all_tokens();
+    assert_ne!(
+        lexer.errors,
+        vec![],
+        "Input '{}' should produce errors",
+        input
     );
 }
