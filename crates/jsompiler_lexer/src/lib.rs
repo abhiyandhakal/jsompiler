@@ -91,13 +91,9 @@ impl Lexer {
                 self.advance();
                 self.lex_template_string()
             }
-            '"' => {
+            '"' | '\'' => {
                 self.advance();
-                self.lex_string('"')
-            }
-            '\'' => {
-                self.advance();
-                self.lex_string('\'')
+                self.lex_string(c)
             }
             '/' => self.lex_comment(), // lex_comment handles advancing
             _ => {
