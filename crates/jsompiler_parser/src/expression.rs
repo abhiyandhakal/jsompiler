@@ -313,6 +313,16 @@ impl Parser {
                     value: property.text.clone(),
                 })),
             })
+        } else if let Token::PrivateIdentifier(_) = self.peek().token {
+            self.advance();
+            let property = self.previous().clone();
+            Ok(Expression::MemberAccess {
+                object: Box::new(expr),
+                property: Box::new(Expression::Identifier(Identifier {
+                    token: property.clone(),
+                    value: property.text.clone(),
+                })),
+            })
         } else {
             Err(vec![Error {
                 error_kind: ErrorKind::UnexpectedToken,
