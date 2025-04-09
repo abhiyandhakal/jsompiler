@@ -144,6 +144,8 @@ impl Parser {
                 expr = self.parse_member_access(expr)?;
             } else if self.peek().token == Token::Delimiter(DelimiterToken::OpenParen) {
                 expr = self.parse_function_call(expr)?;
+            } else if self.peek().token == Token::Delimiter(DelimiterToken::OpenBracket) {
+                expr = self.parse_member_access(expr)?;
             } else if self.match_token(&Token::Operator(OperatorToken::Increment))
                 || self.match_token(&Token::Operator(OperatorToken::Decrement))
             {
@@ -301,35 +303,63 @@ impl Parser {
     }
 
     fn parse_member_access(&mut self, expr: Expression) -> Result<Expression, Vec<Error>> {
-        self.advance(); // Consume the dot
+        match self.peek().token {
+            Token::Delimiter(DelimiterToken::Dot) => {
+                self.advance(); // Consume the dot
 
-        if let Token::Identifier(_) = self.peek().token {
-            self.advance();
-            let property = self.previous().clone();
-            Ok(Expression::MemberAccess {
-                object: Box::new(expr),
-                property: Box::new(Expression::Identifier(Identifier {
-                    token: property.clone(),
-                    value: property.text.clone(),
-                })),
-            })
-        } else if let Token::PrivateIdentifier(_) = self.peek().token {
-            self.advance();
-            let property = self.previous().clone();
-            Ok(Expression::MemberAccess {
-                object: Box::new(expr),
-                property: Box::new(Expression::Identifier(Identifier {
-                    token: property.clone(),
-                    value: property.text.clone(),
-                })),
-            })
-        } else {
-            Err(vec![Error {
+                if let Token::Identifier(_) = self.peek().token {
+                    self.advance();
+                    let property = self.previous().clone();
+                    Ok(Expression::MemberAccess {
+                        object: Box::new(expr),
+                        property: Box::new(Expression::Identifier(Identifier {
+                            token: property.clone(),
+                            value: property.text.clone(),
+                        })),
+                    })
+                } else if let Token::PrivateIdentifier(_) = self.peek().token {
+                    self.advance();
+                    let property = self.previous().clone();
+                    Ok(Expression::MemberAccess {
+                        object: Box::new(expr),
+                        property: Box::new(Expression::Identifier(Identifier {
+                            token: property.clone(),
+                            value: property.text.clone(),
+                        })),
+                    })
+                } else {
+                    Err(vec![Error {
+                        error_kind: ErrorKind::UnexpectedToken,
+                        message: "Expected identifier after '.'".to_string(),
+                        line_number: 1,
+                        pos: 2,
+                    }])
+                }
+            }
+
+            Token::Delimiter(DelimiterToken::OpenBracket) => {
+                self.advance(); // Consume the open bracket
+                let property = self.expression()?;
+                if !self.match_token(&Token::Delimiter(DelimiterToken::CloseBracket)) {
+                    return Err(vec![Error {
+                        error_kind: ErrorKind::UnexpectedToken,
+                        message: "Expected ']'".to_string(),
+                        line_number: 1,
+                        pos: 2,
+                    }]);
+                }
+                Ok(Expression::MemberAccess {
+                    object: Box::new(expr),
+                    property: Box::new(property),
+                })
+            }
+
+            _ => Err(vec![Error {
                 error_kind: ErrorKind::UnexpectedToken,
-                message: "Expected identifier after '.'".to_string(),
+                message: "Expected during member access".to_string(),
                 line_number: 1,
                 pos: 2,
-            }])
+            }]),
         }
     }
 }
