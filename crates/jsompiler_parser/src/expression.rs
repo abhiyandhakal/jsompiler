@@ -10,6 +10,11 @@ use jsompiler_lexer::symbol::{
 pub enum Expression {
     Identifier(Identifier),
     Literal(LiteralToken),
+    ThisExpression,
+    MemberAccess {
+        object: Box<Expression>,
+        property: Box<Expression>,
+    },
     Unary {
         op: Lexeme,
         op_type: String,
@@ -21,7 +26,7 @@ pub enum Expression {
         right: Box<Expression>,
     },
     FunctionCall {
-        name: Identifier,
+        callee: Box<Expression>,
         args: Vec<Expression>,
     },
     ArrayLiteral {
@@ -101,9 +106,8 @@ impl Parser {
     }
 
     fn primary(&mut self) -> Result<Expression, Vec<Error>> {
-        if self.match_token(&Token::Delimiter(DelimiterToken::OpenParen)) {
-            let expr = self.expression()?; // Parse inner expression
-
+        let mut expr = if self.match_token(&Token::Delimiter(DelimiterToken::OpenParen)) {
+            let expr = self.expression()?;
             if !self.match_token(&Token::Delimiter(DelimiterToken::CloseParen)) {
                 return Err(vec![Error {
                     error_kind: ErrorKind::UnexpectedToken,
@@ -112,48 +116,51 @@ impl Parser {
                     pos: 2,
                 }]);
             }
-
-            return Ok(expr); // Return the inner expression
-        }
-
-        if let Token::Identifier(_) = self.peek().token {
+            expr
+        } else if let Token::Keyword(KeywordToken::This) = self.peek().token {
+            self.advance(); // Consume 'this'
+            Expression::ThisExpression
+        } else if let Token::Identifier(_) = self.peek().token {
             self.advance();
-            // Check if it's a function call
-            if self.peek().token == Token::Delimiter(DelimiterToken::OpenParen) {
-                return self.parse_function_call(self.previous().clone());
-            }
-
-            // Check for postfix increment/decrement
-            if self.match_token(&Token::Operator(OperatorToken::Increment))
-                || self.match_token(&Token::Operator(OperatorToken::Decrement))
-            {
-                return Ok(Expression::Unary {
-                    op: self.previous().clone(),
-                    op_type: "Postfix".to_string(),
-                    expr: Box::new(Expression::Identifier(Identifier {
-                        token: self.previous().clone(),
-                        value: self.previous().text.clone(),
-                    })),
-                });
-            }
-
             let identifier = self.previous().clone();
-            return Ok(Expression::Identifier(Identifier {
+            Expression::Identifier(Identifier {
                 token: identifier.clone(),
                 value: identifier.text.clone(),
-            }));
+            })
+        } else if let Some(literal) = self.match_literal() {
+            Expression::Literal(literal)
+        } else {
+            return Err(vec![Error {
+                error_kind: ErrorKind::UnexpectedToken,
+                message: "Expected expression".to_string(),
+                line_number: 1,
+                pos: 2,
+            }]);
+        };
+
+        // After parsing the primary expression, look for member access or function calls
+        loop {
+            if self.peek().token == Token::Delimiter(DelimiterToken::Dot) {
+                expr = self.parse_member_access(expr)?;
+            } else if self.peek().token == Token::Delimiter(DelimiterToken::OpenParen) {
+                expr = self.parse_function_call(expr)?;
+            } else if self.peek().token == Token::Delimiter(DelimiterToken::OpenBracket) {
+                expr = self.parse_member_access(expr)?;
+            } else if self.match_token(&Token::Operator(OperatorToken::Increment))
+                || self.match_token(&Token::Operator(OperatorToken::Decrement))
+            {
+                // Postfix increment/decrement
+                expr = Expression::Unary {
+                    op: self.previous().clone(),
+                    op_type: "Postfix".to_string(),
+                    expr: Box::new(expr),
+                };
+            } else {
+                break; // No more member access or function calls
+            }
         }
 
-        if let Some(literal) = self.match_literal() {
-            return Ok(Expression::Literal(literal));
-        }
-
-        Err(vec![Error {
-            error_kind: ErrorKind::UnexpectedToken,
-            message: "Expected expression".to_string(),
-            line_number: 1,
-            pos: 2,
-        }])
+        Ok(expr)
     }
 
     fn factor(&mut self) -> Result<Expression, Vec<Error>> {
@@ -222,7 +229,7 @@ impl Parser {
         Ok(left)
     }
 
-    fn parse_function_call(&mut self, name: Lexeme) -> Result<Expression, Vec<Error>> {
+    fn parse_function_call(&mut self, callee: Expression) -> Result<Expression, Vec<Error>> {
         println!("Parsing function call");
         self.advance(); // Consume open parenthesis
 
@@ -258,10 +265,7 @@ impl Parser {
         }
 
         Ok(Expression::FunctionCall {
-            name: Identifier {
-                token: name.clone(),
-                value: name.text.clone(),
-            },
+            callee: Box::new(callee),
             args,
         })
     }
@@ -296,5 +300,66 @@ impl Parser {
         }
 
         Ok(Expression::ArrayLiteral { elements })
+    }
+
+    fn parse_member_access(&mut self, expr: Expression) -> Result<Expression, Vec<Error>> {
+        match self.peek().token {
+            Token::Delimiter(DelimiterToken::Dot) => {
+                self.advance(); // Consume the dot
+
+                if let Token::Identifier(_) = self.peek().token {
+                    self.advance();
+                    let property = self.previous().clone();
+                    Ok(Expression::MemberAccess {
+                        object: Box::new(expr),
+                        property: Box::new(Expression::Identifier(Identifier {
+                            token: property.clone(),
+                            value: property.text.clone(),
+                        })),
+                    })
+                } else if let Token::PrivateIdentifier(_) = self.peek().token {
+                    self.advance();
+                    let property = self.previous().clone();
+                    Ok(Expression::MemberAccess {
+                        object: Box::new(expr),
+                        property: Box::new(Expression::Identifier(Identifier {
+                            token: property.clone(),
+                            value: property.text.clone(),
+                        })),
+                    })
+                } else {
+                    Err(vec![Error {
+                        error_kind: ErrorKind::UnexpectedToken,
+                        message: "Expected identifier after '.'".to_string(),
+                        line_number: 1,
+                        pos: 2,
+                    }])
+                }
+            }
+
+            Token::Delimiter(DelimiterToken::OpenBracket) => {
+                self.advance(); // Consume the open bracket
+                let property = self.expression()?;
+                if !self.match_token(&Token::Delimiter(DelimiterToken::CloseBracket)) {
+                    return Err(vec![Error {
+                        error_kind: ErrorKind::UnexpectedToken,
+                        message: "Expected ']'".to_string(),
+                        line_number: 1,
+                        pos: 2,
+                    }]);
+                }
+                Ok(Expression::MemberAccess {
+                    object: Box::new(expr),
+                    property: Box::new(property),
+                })
+            }
+
+            _ => Err(vec![Error {
+                error_kind: ErrorKind::UnexpectedToken,
+                message: "Expected during member access".to_string(),
+                line_number: 1,
+                pos: 2,
+            }]),
+        }
     }
 }
