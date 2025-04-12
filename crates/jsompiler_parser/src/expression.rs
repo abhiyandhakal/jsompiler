@@ -11,6 +11,7 @@ pub enum Expression {
     Identifier(Identifier),
     Literal(LiteralToken),
     ThisExpression,
+    SpreadElement(Box<Expression>),
     MemberAccess {
         object: Box<Expression>,
         property: Box<Expression>,
@@ -81,6 +82,9 @@ impl Parser {
         }
         if self.peek().token == Token::Keyword(KeywordToken::Class) {
             return self.parse_class_expression();
+        }
+        if self.peek().token == Token::Operator(OperatorToken::Spread) {
+            return self.parse_spread_operator();
         }
 
         self.comparison() // Start from highest precedence binary operations
@@ -361,5 +365,11 @@ impl Parser {
                 pos: 2,
             }]),
         }
+    }
+
+    fn parse_spread_operator(&mut self) -> Result<Expression, Vec<Error>> {
+        self.advance(); // Consume the spread operator
+        let expr = self.expression()?;
+        Ok(Expression::SpreadElement(Box::new(expr)))
     }
 }

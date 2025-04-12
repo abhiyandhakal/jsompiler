@@ -1,3 +1,4 @@
+use crate::function_statement::Parameter;
 use crate::{expression::Expression, Identifier, Parser, Statement};
 use crate::{Error, ErrorKind};
 use jsompiler_lexer::symbol::{
@@ -15,7 +16,7 @@ pub struct ClassExpression {
 pub enum ClassElement {
     MethodDefinition {
         name: ClassElementName,
-        params: Vec<Identifier>,
+        params: Vec<Parameter>,
         body: Option<Statement>,
         is_static: bool,
     },
