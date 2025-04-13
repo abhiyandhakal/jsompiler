@@ -69,4 +69,31 @@ impl Lexer {
         }
         return self.lex_operator_punctuation('/');
     }
+
+    pub fn lex_hashbang(&mut self) -> Result<Option<Lexeme>, Error> {
+        if self.peek_next_char() != Some('!') {
+            return Err(Error {
+                pos: self.current,
+                line_number: self.line_number,
+                message: "Invalid character #".to_string(),
+                error_kind: ErrorKind::LexerError,
+            });
+        }
+        self.advance();
+        let start = self.current + 1;
+        loop {
+            let ch = self.get_current_char();
+            if ch == '\n' || ch == '\0' {
+                break;
+            }
+            self.advance();
+        }
+
+        Ok(Some(lexeme(
+            self.source[self.start..self.current].iter().collect(),
+            Token::Comment(symbol::CommentToken::HashBang(
+                self.source[start..self.current].iter().collect(),
+            )),
+        )))
+    }
 }

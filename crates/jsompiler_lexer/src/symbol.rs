@@ -176,6 +176,7 @@ pub enum NumberLiteral {
 pub enum CommentToken {
     Line(String),
     Block(String),
+    HashBang(String),
 }
 
 pub fn lexeme(text: String, token: Token) -> Lexeme {

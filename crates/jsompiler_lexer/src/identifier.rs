@@ -9,6 +9,11 @@ impl Lexer {
     pub fn lex_identifier(&mut self) -> Result<Option<Lexeme>, Error> {
         let is_private = self.get_current_char() == '#';
         if is_private {
+            // Check if # is the first token, if yes it can't be private field
+            if self.tokens.len() == 0 {
+                return self.lex_hashbang();
+            }
+
             self.advance(); // consume '#'
         }
 
