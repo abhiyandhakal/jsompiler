@@ -126,6 +126,9 @@ impl Lexer {
                         processed_string.push('\\');
                         self.advance(); // Skip `\`
                     }
+                    '\n' => {
+                        self.advance();
+                    }
                     'n' => {
                         processed_string.push('\n');
                         self.advance(); // Skip `\`

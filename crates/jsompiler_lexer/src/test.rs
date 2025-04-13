@@ -410,3 +410,23 @@ fn test_invalid_regex() {
         input
     );
 }
+
+#[test]
+fn test_escape_newline_string() {
+    let input = r#"'hello \
+world'"#;
+    let mut lexer = Lexer::new(input.to_string());
+    lexer.scan_all_tokens();
+    assert_eq!(lexer.errors, vec![]);
+    assert_eq!(
+        lexer
+            .tokens
+            .iter()
+            .map(|l| l.token.clone())
+            .collect::<Vec<_>>(),
+        vec![
+            Token::Literal(LiteralToken::String("hello world".to_string())),
+            Token::EOF
+        ]
+    );
+}
