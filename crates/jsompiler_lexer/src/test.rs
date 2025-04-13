@@ -449,3 +449,25 @@ fn test_hashbang() {
         ]
     );
 }
+
+#[test]
+fn test_number_separator() {
+    let inputs = ["10_00", "10_00.00_00"];
+
+    for input in inputs {
+        let mut lexer = Lexer::new(input.to_string());
+        lexer.scan_all_tokens();
+        assert_eq!(lexer.errors, vec![]);
+        assert_eq!(
+            lexer
+                .tokens
+                .iter()
+                .map(|l| l.token.clone())
+                .collect::<Vec<_>>(),
+            vec![
+                Token::Literal(LiteralToken::Number(NumberLiteral::Value(1000_f64))),
+                Token::EOF
+            ]
+        );
+    }
+}

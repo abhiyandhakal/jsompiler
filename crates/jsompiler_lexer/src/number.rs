@@ -55,10 +55,13 @@ impl Lexer {
                         line_number: self.line_number,
                     });
                 } else {
-                    let lexeme_f64 = u64::from_str_radix(
-                        lexeme_slice.trim_start_matches(format!("0{}", base.0).as_str()),
-                        base.1.len() as u32,
+                    let test = omit_underscores_from_numbers(
+                        &lexeme_slice
+                            .trim_start_matches(format!("0{}", base.0).as_str())
+                            .to_string(),
                     );
+                    println!("yooo {test}");
+                    let lexeme_f64 = u64::from_str_radix(test.as_str(), base.1.len() as u32);
                     if !lexeme_f64.is_ok() {
                         return Err(Error {
                             pos: self.current,
@@ -89,18 +92,27 @@ impl Lexer {
             }
         }
 
-        while self.get_current_char().is_ascii_digit() {
+        while self.get_current_char().is_ascii_digit()
+            || (self.get_current_char() == '_'
+                && self.peek_next_char().is_some_and(|ch| ch.is_ascii_digit()))
+        {
             self.advance();
         }
         let token_string: String = self.source[self.start..self.current].iter().collect();
 
-        if self.get_current_char() == '.' {
+        if self.get_current_char() == '.'
+            || (self.get_current_char() == '_'
+                && self.peek_next_char().is_some_and(|ch| ch.is_ascii_digit()))
+        {
             self.advance();
-            while self.get_current_char().is_ascii_digit() {
+            while self.get_current_char().is_ascii_digit()
+                || (self.get_current_char() == '_'
+                    && self.peek_next_char().is_some_and(|ch| ch.is_ascii_digit()))
+            {
                 self.advance();
             }
             let token_string: String = self.source[self.start..self.current].iter().collect();
-            let token_num = token_string.parse::<f64>();
+            let token_num = omit_underscores_from_numbers(&token_string).parse::<f64>();
             if !token_num.is_ok() {
                 return Err(Error::new(
                     ErrorKind::LexerError,
@@ -117,7 +129,7 @@ impl Lexer {
                 ))),
             )));
         }
-        let token_num = token_string.parse::<f64>();
+        let token_num = omit_underscores_from_numbers(&token_string).parse::<f64>();
         if !token_num.is_ok() {
             return Err(Error::new(
                 ErrorKind::LexerError,
@@ -135,4 +147,14 @@ impl Lexer {
             ))),
         )))
     }
+}
+
+fn omit_underscores_from_numbers(number_string: &String) -> String {
+    let mut new_str = "".to_string();
+    for ch in number_string.chars() {
+        if ch.is_ascii_digit() || ch == '.' {
+            new_str.push(ch);
+        }
+    }
+    new_str
 }
