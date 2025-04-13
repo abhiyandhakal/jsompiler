@@ -452,7 +452,7 @@ fn test_hashbang() {
 
 #[test]
 fn test_number_separator() {
-    let inputs = ["10_00", "10_00.00_00"];
+    let inputs = ["10_00", "10_00.00_00", "0x3_e8", "0o17_50"];
 
     for input in inputs {
         let mut lexer = Lexer::new(input.to_string());

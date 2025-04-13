@@ -31,6 +31,8 @@ impl Lexer {
                 while base
                     .1
                     .contains(&self.get_current_char().to_ascii_lowercase())
+                    || (self.get_current_char() == '_'
+                        && self.peek_next_char().is_some_and(|ch| ch.is_ascii_digit()))
                 {
                     self.advance();
                 }
@@ -55,13 +57,15 @@ impl Lexer {
                         line_number: self.line_number,
                     });
                 } else {
-                    let test = omit_underscores_from_numbers(
-                        &lexeme_slice
-                            .trim_start_matches(format!("0{}", base.0).as_str())
-                            .to_string(),
+                    let lexeme_f64 = u64::from_str_radix(
+                        omit_underscores_from_numbers(
+                            &lexeme_slice
+                                .trim_start_matches(format!("0{}", base.0).as_str())
+                                .to_string(),
+                        )
+                        .as_str(),
+                        base.1.len() as u32,
                     );
-                    println!("yooo {test}");
-                    let lexeme_f64 = u64::from_str_radix(test.as_str(), base.1.len() as u32);
                     if !lexeme_f64.is_ok() {
                         return Err(Error {
                             pos: self.current,
@@ -152,7 +156,7 @@ impl Lexer {
 fn omit_underscores_from_numbers(number_string: &String) -> String {
     let mut new_str = "".to_string();
     for ch in number_string.chars() {
-        if ch.is_ascii_digit() || ch == '.' {
+        if ch != '_' {
             new_str.push(ch);
         }
     }
