@@ -1,5 +1,6 @@
 mod comment;
 mod identifier;
+mod jsx;
 mod number;
 mod operator_punctuation;
 mod string;
@@ -95,7 +96,9 @@ impl Lexer {
                 self.advance();
                 self.lex_string(c)
             }
+
             '/' => self.lex_comment(), // lex_comment handles advancing
+            '<' => self.lex_jsx(),
             _ => {
                 let c = self.advance();
                 self.lex_operator_punctuation(c)

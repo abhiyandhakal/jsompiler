@@ -1,6 +1,8 @@
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 
+use crate::jsx::symbol::JSXToken;
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct Lexeme {
     pub text: String,
@@ -20,6 +22,7 @@ pub enum Token {
     WhiteSpace(String),
     RegExp { pattern: String, flags: String },
     ContextualKeyword(ContextualKeywordToken),
+    JSX(JSXToken),
     EOF,
 }
 
