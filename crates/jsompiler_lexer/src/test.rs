@@ -471,3 +471,24 @@ fn test_number_separator() {
         );
     }
 }
+
+#[test]
+fn test_invlid_number_separator() {
+    let inputs = ["10_00_", "_10_00.00_00", "0x_3_e8", "0o_17_50"];
+
+    for input in inputs {
+        let mut lexer = Lexer::new(input.to_string());
+        lexer.scan_all_tokens();
+        assert_ne!(
+            lexer
+                .tokens
+                .iter()
+                .map(|l| l.token.clone())
+                .collect::<Vec<_>>(),
+            vec![
+                Token::Literal(LiteralToken::Number(NumberLiteral::Value(1000_f64))),
+                Token::EOF
+            ]
+        );
+    }
+}
