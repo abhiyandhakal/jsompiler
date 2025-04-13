@@ -1,4 +1,5 @@
 pub mod symbol;
+pub mod test;
 
 use jsompiler_common::{Error, ErrorKind};
 use symbol::{JSX_SYMBOLS, JSXToken};
@@ -11,10 +12,14 @@ use crate::{
 impl Lexer {
     pub fn lex_jsx(&mut self) -> Result<Option<Lexeme>, Error> {
         let mut is_jsx = false;
-        if let Some(last_token) = self.tokens.last() {
-            if let crate::symbol::Token::Operator(_) = last_token.token {
-                is_jsx = true;
-            }
+        // if let Some(last_token) = self.tokens.last() {
+        match self.tokens.last() {
+            Some(last_token) => match last_token.token {
+                Token::Operator(_) => is_jsx = true,
+                Token::Delimiter(_) => is_jsx = true,
+                _ => {}
+            },
+            None => is_jsx = true,
         }
         if !is_jsx {
             return self.lex_operator_punctuation('<');
@@ -30,7 +35,6 @@ impl Lexer {
 
                     if let Ok(Some(token)) = &res {
                         let token = &token.token;
-                        println!("{:?}, {}", token, self.get_current_char());
                         if token == &Token::JSX(JSXToken::LessThanSlash)
                             || token == &Token::JSX(JSXToken::SlashGreaterThan)
                         {
@@ -56,7 +60,6 @@ impl Lexer {
                 self.tokens.push(op);
             }
 
-            println!("element_count {element_count}, {}", self.get_current_char());
             if (element_count == 0
                 && (token == Some(Token::JSX(JSXToken::GreaterThan))
                     || token == Some(Token::JSX(JSXToken::SlashGreaterThan))))
@@ -68,6 +71,7 @@ impl Lexer {
             self.advance();
         }
 
+        self.advance();
         Ok(None)
     }
 
