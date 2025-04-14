@@ -63,6 +63,7 @@ impl Lexer {
                         &lexeme_slice
                             .trim_start_matches(format!("0{}", base.0).as_str())
                             .to_string(),
+                        false,
                     );
                     if omitted.is_none() {
                         self.current -= 1;
@@ -115,13 +116,29 @@ impl Lexer {
             }
         }
 
-        while self.get_current_char().is_ascii_digit()
-            || (self.get_current_char() == '_'
-                && self.peek_next_char().is_some_and(|ch| ch.is_ascii_digit()))
-        {
+        loop {
+            let ch = self.get_current_char();
+            if !ch.is_ascii_digit()
+                && !(ch == '_'
+                    && self
+                        .peek_next_char()
+                        .is_some_and(|ch| ch.is_ascii_digit() || ch == 'e'))
+                && ch != 'e'
+            {
+                break;
+            }
             self.advance();
         }
         let token_string: String = self.source[self.start..self.current].iter().collect();
+        println!("{token_string}");
+        if token_string.chars().last() == Some('e') {
+            return Err(Error::new(
+                ErrorKind::LexerError,
+                format!("Invalid number {token_string}"),
+                self.line_number,
+                self.current,
+            ));
+        }
 
         if self.get_current_char() == '.'
             || (self.get_current_char() == '_'
@@ -135,7 +152,7 @@ impl Lexer {
                 self.advance();
             }
             let token_string: String = self.source[self.start..self.current].iter().collect();
-            let omitted = omit_underscores_from_numbers(&token_string);
+            let omitted = omit_underscores_from_numbers(&token_string, true);
             if omitted.is_none() {
                 return Err(Error::new(
                     ErrorKind::LexerError,
@@ -162,7 +179,7 @@ impl Lexer {
                 ))),
             )));
         }
-        let omitted = omit_underscores_from_numbers(&token_string);
+        let omitted = omit_underscores_from_numbers(&token_string, true);
         if omitted.is_none() {
             return Err(Error::new(
                 ErrorKind::LexerError,
@@ -192,11 +209,19 @@ impl Lexer {
     }
 }
 
-fn omit_underscores_from_numbers(number_string: &String) -> Option<String> {
+fn omit_underscores_from_numbers(number_string: &String, is_decimal: bool) -> Option<String> {
     let mut new_str = "".to_string();
-    println!("omit {number_string}");
+    let mut collect_chars = vec![];
     for (i, ch) in number_string.char_indices() {
-        if ch == '_' && (i == 0 || i == number_string.chars().count() - 1) {
+        collect_chars.push(ch);
+        if ch == '_'
+            && (i == 0
+                || i == number_string.chars().count() - 1
+                || (is_decimal && collect_chars[i.saturating_sub(1)] == 'e'))
+        {
+            return None;
+        }
+        if is_decimal && ch == 'e' && collect_chars[i.saturating_sub(1)] == '_' {
             return None;
         }
         if ch != '_' {

@@ -492,3 +492,31 @@ fn test_invlid_number_separator() {
         );
     }
 }
+
+#[test]
+fn test_exponential_number() {
+    let input = "12e2";
+    let mut lexer = Lexer::new(input.to_string());
+    lexer.scan_all_tokens();
+    assert_eq!(
+        lexer
+            .tokens
+            .iter()
+            .map(|l| l.token.clone())
+            .collect::<Vec<_>>(),
+        vec![
+            Token::Literal(LiteralToken::Number(NumberLiteral::Value(1200.0))),
+            Token::EOF
+        ]
+    );
+}
+
+#[test]
+fn test_invalid_exponential_number() {
+    let inputs = ["12_e2", "12e", "12e_2", "12e2e2"];
+    for input in inputs {
+        let mut lexer = Lexer::new(input.to_string());
+        lexer.scan_all_tokens();
+        assert_ne!(lexer.errors, vec![]);
+    }
+}
