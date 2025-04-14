@@ -9,6 +9,7 @@ mod let_statement;
 mod object_expression;
 mod return_statement;
 mod while_statement;
+mod yield_statement;
 
 use assignment_statement::AssignmentStatement;
 use block_statement::BlockStatement;
@@ -19,6 +20,7 @@ use if_statement::IfStatement;
 use let_statement::LetStatement;
 use return_statement::ReturnStatement;
 use while_statement::WhileStatement;
+use yield_statement::YieldStatement;
 
 use jsompiler_common::{Error, ErrorKind};
 use jsompiler_lexer::symbol::{
@@ -43,6 +45,7 @@ pub enum Statement {
     FunctionStatement(FunctionStatement),
     AssignmentStatement(AssignmentStatement),
     ForLoopStatement(ForLoopStatement),
+    YieldStatement(YieldStatement),
 }
 
 #[derive(Debug, Clone)]
@@ -121,6 +124,7 @@ impl Parser {
             Token::Keyword(KeywordToken::While) => self.parse_while_statement(),
             Token::Keyword(KeywordToken::For) => self.parser_for_loop_statement(),
             Token::Keyword(KeywordToken::Function) => self.parse_function_statement(),
+            Token::ContextualKeyword(ContextualKeywordToken::Yield) => self.parse_yield_statement(),
             Token::Delimiter(DelimiterToken::OpenBrace) => self.parse_brace_block_or_object(),
             Token::Delimiter(DelimiterToken::OpenParen) => self.parenthesis_expression(),
             _ => Err(vec![Error {
