@@ -31,6 +31,10 @@ impl Lexer {
                 while base
                     .1
                     .contains(&self.get_current_char().to_ascii_lowercase())
+                    || (self.get_current_char() == '_'
+                        && self
+                            .peek_next_char()
+                            .is_some_and(|ch| base.1.contains(&ch.to_ascii_lowercase())))
                 {
                     self.advance();
                 }
@@ -55,10 +59,33 @@ impl Lexer {
                         line_number: self.line_number,
                     });
                 } else {
-                    let lexeme_f64 = u64::from_str_radix(
-                        lexeme_slice.trim_start_matches(format!("0{}", base.0).as_str()),
-                        base.1.len() as u32,
+                    let omitted = omit_underscores_from_numbers(
+                        &lexeme_slice
+                            .trim_start_matches(format!("0{}", base.0).as_str())
+                            .to_string(),
+                        false,
                     );
+                    if omitted.is_none() {
+                        self.current -= 1;
+                        return Err(Error {
+                            pos: self.current,
+                            message: format!(
+                                "Invalid {} value found: {}{}",
+                                match base.0 {
+                                    'o' => "octal",
+                                    'b' => "binary",
+                                    'x' => "hex",
+                                    _ => unreachable!(),
+                                },
+                                lexeme_slice,
+                                self.source[self.current]
+                            ),
+                            error_kind: ErrorKind::LexerError,
+                            line_number: self.line_number,
+                        });
+                    }
+                    let omitted = omitted.unwrap();
+                    let lexeme_f64 = u64::from_str_radix(omitted.as_str(), base.1.len() as u32);
                     if !lexeme_f64.is_ok() {
                         return Err(Error {
                             pos: self.current,
@@ -89,18 +116,53 @@ impl Lexer {
             }
         }
 
-        while self.get_current_char().is_ascii_digit() {
+        loop {
+            let ch = self.get_current_char();
+            if !ch.is_ascii_digit()
+                && !(ch == '_'
+                    && self
+                        .peek_next_char()
+                        .is_some_and(|ch| ch.is_ascii_digit() || ch == 'e'))
+                && ch != 'e'
+            {
+                break;
+            }
             self.advance();
         }
         let token_string: String = self.source[self.start..self.current].iter().collect();
+        println!("{token_string}");
+        if token_string.chars().last() == Some('e') {
+            return Err(Error::new(
+                ErrorKind::LexerError,
+                format!("Invalid number {token_string}"),
+                self.line_number,
+                self.current,
+            ));
+        }
 
-        if self.get_current_char() == '.' {
+        if self.get_current_char() == '.'
+            || (self.get_current_char() == '_'
+                && self.peek_next_char().is_some_and(|ch| ch.is_ascii_digit()))
+        {
             self.advance();
-            while self.get_current_char().is_ascii_digit() {
+            while self.get_current_char().is_ascii_digit()
+                || (self.get_current_char() == '_'
+                    && self.peek_next_char().is_some_and(|ch| ch.is_ascii_digit()))
+            {
                 self.advance();
             }
             let token_string: String = self.source[self.start..self.current].iter().collect();
-            let token_num = token_string.parse::<f64>();
+            let omitted = omit_underscores_from_numbers(&token_string, true);
+            if omitted.is_none() {
+                return Err(Error::new(
+                    ErrorKind::LexerError,
+                    format!("Invalid number {token_string}"),
+                    self.line_number,
+                    self.current,
+                ));
+            }
+            let omitted = omitted.unwrap();
+            let token_num = omitted.parse::<f64>();
             if !token_num.is_ok() {
                 return Err(Error::new(
                     ErrorKind::LexerError,
@@ -117,7 +179,17 @@ impl Lexer {
                 ))),
             )));
         }
-        let token_num = token_string.parse::<f64>();
+        let omitted = omit_underscores_from_numbers(&token_string, true);
+        if omitted.is_none() {
+            return Err(Error::new(
+                ErrorKind::LexerError,
+                format!("Invalid number {token_string}"),
+                self.line_number,
+                self.current,
+            ));
+        }
+        let omitted = omitted.unwrap();
+        let token_num = omitted.parse::<f64>();
         if !token_num.is_ok() {
             return Err(Error::new(
                 ErrorKind::LexerError,
@@ -135,4 +207,26 @@ impl Lexer {
             ))),
         )))
     }
+}
+
+fn omit_underscores_from_numbers(number_string: &String, is_decimal: bool) -> Option<String> {
+    let mut new_str = "".to_string();
+    let mut collect_chars = vec![];
+    for (i, ch) in number_string.char_indices() {
+        collect_chars.push(ch);
+        if ch == '_'
+            && (i == 0
+                || i == number_string.chars().count() - 1
+                || (is_decimal && collect_chars[i.saturating_sub(1)] == 'e'))
+        {
+            return None;
+        }
+        if is_decimal && ch == 'e' && collect_chars[i.saturating_sub(1)] == '_' {
+            return None;
+        }
+        if ch != '_' {
+            new_str.push(ch);
+        }
+    }
+    Some(new_str)
 }

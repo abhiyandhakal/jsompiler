@@ -123,22 +123,30 @@ pub enum OperatorToken {
     LeftShift,          // <<
     RightShift,         // >>
     UnsignedRightShift, // >>>
-    // Other
     Arrow,
-    Spread, // ...
-    // Additional operators
-    PlusEqual,        // +=
-    MinusEqual,       // -=
-    AsteriskEqual,    // *=
-    AsteriskAsterisk, // **
-    SlashEqual,       // /=
-    PercentEqual,     // %=
-    Increment,        // ++
-    Decrement,        // --
-    QuestionMark,     // ?
-    Colon,            // :
-    NullishCoalesce,  // ??
-    OptionalChain,    // ?.
+    Spread,                  // ...
+    PlusEqual,               // +=
+    MinusEqual,              // -=
+    AsteriskEqual,           // *=
+    AsteriskAsterisk,        // **
+    SlashEqual,              // /=
+    PercentEqual,            // %=
+    Increment,               // ++
+    Decrement,               // --
+    QuestionMark,            // ?
+    Colon,                   // :
+    NullishCoalesce,         // ??
+    OptionalChain,           // ?.
+    AsteriskAsteriskEqual,   // **=
+    LeftShiftEqual,          // <<=
+    RightShiftEqual,         // >>=
+    UnsignedRightShiftEqual, // >>>=
+    BitwiseAndEqual,         // &=
+    BitwiseOrEqual,          // |=
+    BitwiseXorEqual,         // ^=
+    LogicalAndEqual,         // &&=
+    LogicalOrEqual,          // ||=
+    NullishCoalesceEqual,    // ??=
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -277,6 +285,9 @@ lazy_static! {
         m.insert("<<", lexeme("<<".to_string(), Token::Operator(OperatorToken::LeftShift)));
         m.insert(">>", lexeme(">>".to_string(), Token::Operator(OperatorToken::RightShift)));
         m.insert(">>>", lexeme(">>>".to_string(), Token::Operator(OperatorToken::UnsignedRightShift)));
+        m.insert("<<=", lexeme("<<=".to_string(), Token::Operator(OperatorToken::LeftShiftEqual)));
+        m.insert(">>=", lexeme(">>=".to_string(), Token::Operator(OperatorToken::RightShiftEqual)));
+        m.insert(">>>=", lexeme(">>>=".to_string(), Token::Operator(OperatorToken::UnsignedRightShiftEqual)));
         m.insert("=>", lexeme("=>".to_string(), Token::Operator(OperatorToken::Arrow)));
 
         // Additional operators
@@ -293,6 +304,13 @@ lazy_static! {
         m.insert("??", lexeme("??".to_string(), Token::Operator(OperatorToken::NullishCoalesce)));
         m.insert("?.", lexeme("?.".to_string(), Token::Operator(OperatorToken::OptionalChain)));
         m.insert("...", lexeme("...".to_string(), Token::Operator(OperatorToken::Spread)));
+        m.insert("**=", lexeme("**=".to_string(), Token::Operator(OperatorToken::AsteriskAsteriskEqual)));
+        m.insert("&=", lexeme("&=".to_string(), Token::Operator(OperatorToken::BitwiseAndEqual)));
+        m.insert("|=", lexeme("|=".to_string(), Token::Operator(OperatorToken::BitwiseOrEqual)));
+        m.insert("^=", lexeme("^=".to_string(), Token::Operator(OperatorToken::BitwiseXorEqual)));
+        m.insert("&&=", lexeme("&&=".to_string(), Token::Operator(OperatorToken::LogicalOrEqual)));
+        m.insert("||=", lexeme("||=".to_string(), Token::Operator(OperatorToken::LogicalOrEqual)));
+        m.insert("??=", lexeme("??=".to_string(), Token::Operator(OperatorToken::NullishCoalesceEqual)));
 
         // Delimiters
         m.insert("(", lexeme("(".to_string(), Token::Delimiter(DelimiterToken::OpenParen)));
@@ -375,6 +393,16 @@ impl std::fmt::Display for OperatorToken {
             OperatorToken::NullishCoalesce => "??",
             OperatorToken::OptionalChain => "?.",
             OperatorToken::Spread => "...",
+            OperatorToken::AsteriskAsteriskEqual => "**=",
+            OperatorToken::LeftShiftEqual => "<<=",
+            OperatorToken::RightShiftEqual => ">>=",
+            OperatorToken::UnsignedRightShiftEqual => ">>>=",
+            OperatorToken::BitwiseAndEqual => "&=",
+            OperatorToken::BitwiseOrEqual => "|=",
+            OperatorToken::BitwiseXorEqual => "^=",
+            OperatorToken::LogicalAndEqual => "&&=",
+            OperatorToken::LogicalOrEqual => "||=",
+            OperatorToken::NullishCoalesceEqual => "??=",
         };
 
         write!(f, "{}", symbol)
