@@ -10,3 +10,4 @@ readme = "../../README.md"
 [dependencies]
 lazy_static = "1.5.0"
 jsompiler_common = "0.1.0"
+num-bigint = "0.4.6"

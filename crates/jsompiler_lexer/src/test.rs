@@ -498,6 +498,7 @@ fn test_exponential_number() {
     let input = "12e2";
     let mut lexer = Lexer::new(input.to_string());
     lexer.scan_all_tokens();
+    assert_eq!(lexer.errors, vec![]);
     assert_eq!(
         lexer
             .tokens
@@ -519,4 +520,25 @@ fn test_invalid_exponential_number() {
         lexer.scan_all_tokens();
         assert_ne!(lexer.errors, vec![]);
     }
+}
+
+#[test]
+fn test_bigint() {
+    let input = "12n";
+    let mut lexer = Lexer::new(input.to_string());
+    lexer.scan_all_tokens();
+    assert_eq!(lexer.errors, vec![]);
+    assert_eq!(
+        lexer
+            .tokens
+            .iter()
+            .map(|l| l.token.clone())
+            .collect::<Vec<_>>(),
+        vec![
+            Token::Literal(LiteralToken::Number(NumberLiteral::BigInt(
+                num_bigint::BigInt::from(12)
+            ))),
+            Token::EOF
+        ]
+    );
 }

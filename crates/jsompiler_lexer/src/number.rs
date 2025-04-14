@@ -1,4 +1,5 @@
 use jsompiler_common::{Error, ErrorKind};
+use num_bigint::BigInt;
 
 use crate::{
     Lexer,
@@ -130,7 +131,6 @@ impl Lexer {
             self.advance();
         }
         let token_string: String = self.source[self.start..self.current].iter().collect();
-        println!("{token_string}");
         if token_string.chars().last() == Some('e') {
             return Err(Error::new(
                 ErrorKind::LexerError,
@@ -179,6 +179,7 @@ impl Lexer {
                 ))),
             )));
         }
+
         let omitted = omit_underscores_from_numbers(&token_string, true);
         if omitted.is_none() {
             return Err(Error::new(
@@ -200,6 +201,17 @@ impl Lexer {
         }
         let token_num = token_num.unwrap();
 
+        // Check if bigint
+        if self.get_current_char() == 'n' {
+            self.advance(); // Consume 'n'
+            let token_num = token_num as i32;
+            return Ok(Some(lexeme(
+                token_string,
+                Token::Literal(LiteralToken::Number(symbol::NumberLiteral::BigInt(
+                    BigInt::from(token_num),
+                ))),
+            )));
+        }
         Ok(Some(lexeme(
             token_string,
             Token::Literal(LiteralToken::Number(symbol::NumberLiteral::Value(
