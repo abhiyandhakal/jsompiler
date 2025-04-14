@@ -34,6 +34,7 @@ pub enum Property {
         param: Identifier,
         body: Statement,
     },
+    Spread(Expression), // For spread properties like { ...obj }
 }
 
 impl Parser {
@@ -97,6 +98,10 @@ impl Parser {
             return self.parse_accessor_property();
         }
 
+        if self.peek().token == Token::Operator(OperatorToken::Spread) {
+            let expr = self.expression()?;
+            return Ok(Property::Spread(expr));
+        }
         // Parse the property key
         let key = self.parse_property_key()?;
 
