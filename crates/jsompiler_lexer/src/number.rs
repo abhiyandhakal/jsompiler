@@ -8,11 +8,6 @@ use crate::{
 
 impl Lexer {
     pub fn lex_number(&mut self) -> Result<Option<Lexeme>, crate::Error> {
-        self.advance();
-        return self.lex_base_values();
-    }
-
-    fn lex_base_values(&mut self) -> Result<Option<Lexeme>, crate::Error> {
         // Lex value with base (hex, octal, binary)
         let hex_allowed_chars = [
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
@@ -25,6 +20,7 @@ impl Lexer {
             ('b', &binary_allowed_chars),
             ('x', &hex_allowed_chars),
         ];
+        self.advance();
         if self.source[self.current - 1] == '0' {
             let current_index = self.current;
             if let Some(&base) = to_check_base
@@ -67,7 +63,7 @@ impl Lexer {
                     break;
                 }
             }
-            if is_octal {
+            if is_octal && !lexeme_slice.starts_with('.') {
                 return self.output_base_value(lexeme_slice, ('o', &octal_allowed_chars));
             }
             self.current = current_index;
