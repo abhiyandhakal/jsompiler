@@ -63,7 +63,7 @@ impl Lexer {
                     break;
                 }
             }
-            if is_octal && !lexeme_slice.starts_with('.') {
+            if is_octal && !lexeme_slice.starts_with('.') && lexeme_slice.len() != 0 {
                 return self.output_base_value(lexeme_slice, ('o', &octal_allowed_chars));
             }
             self.current = current_index;
