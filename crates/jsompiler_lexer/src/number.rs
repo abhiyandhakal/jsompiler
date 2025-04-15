@@ -3,7 +3,7 @@ use num_bigint::BigInt;
 
 use crate::{
     Lexer,
-    symbol::{self, Lexeme, LiteralToken, Token, lexeme},
+    symbol::{self, Lexeme, LiteralToken, SYMBOLS, Token, lexeme},
 };
 
 impl Lexer {
@@ -150,15 +150,18 @@ impl Lexer {
     fn lex_nobase_numbers(&mut self) -> Result<Option<Lexeme>, crate::Error> {
         loop {
             let ch = self.get_current_char();
-            if !ch.is_ascii_digit()
-                && !(ch == '_'
-                    && self
-                        .peek_next_char()
-                        .is_some_and(|ch| ch.is_ascii_digit() || ch == 'e'))
-                && ch != 'e'
-            {
+            if ch == ' ' || ch == '\t' || ch == '\0' || ch == '\n' {
                 break;
             }
+            if let Some(lexeme) = SYMBOLS.get(ch.to_string().as_str()) {
+                match lexeme.token {
+                    Token::Operator(_) => break,
+                    Token::Delimiter(_) => break,
+                    Token::EOF => break,
+                    _ => {}
+                }
+            }
+
             self.advance();
         }
         let token_string: String = self.source[self.start..self.current].iter().collect();
@@ -212,6 +215,7 @@ impl Lexer {
         }
 
         let omitted = omit_underscores_from_numbers(&token_string, true);
+
         if omitted.is_none() {
             return Err(Error::new(
                 ErrorKind::LexerError,
@@ -220,7 +224,13 @@ impl Lexer {
                 self.current,
             ));
         }
-        let omitted = omitted.unwrap();
+        let mut omitted = omitted.unwrap();
+        let mut is_bigint = false;
+        if omitted.chars().last() == Some('n') {
+            is_bigint = true;
+            omitted.pop();
+        }
+
         let token_num = omitted.parse::<f64>();
         if !token_num.is_ok() {
             return Err(Error::new(
@@ -232,9 +242,7 @@ impl Lexer {
         }
         let token_num = token_num.unwrap();
 
-        // Check if bigint
-        if self.get_current_char() == 'n' {
-            self.advance(); // Consume 'n'
+        if is_bigint {
             let token_num = token_num as i32;
             return Ok(Some(lexeme(
                 token_string,
