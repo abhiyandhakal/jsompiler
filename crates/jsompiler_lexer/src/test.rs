@@ -598,3 +598,22 @@ fn test_legacy_octal_syntax() {
         ]
     );
 }
+
+#[test]
+fn test_zero() {
+    let input = "0";
+    let mut lexer = Lexer::new(input.to_string());
+    lexer.scan_all_tokens();
+    assert_eq!(lexer.errors, vec![]);
+    assert_eq!(
+        lexer
+            .tokens
+            .iter()
+            .map(|l| l.token.clone())
+            .collect::<Vec<_>>(),
+        vec![
+            Token::Literal(LiteralToken::Number(NumberLiteral::Value(0.))),
+            Token::EOF
+        ]
+    );
+}
