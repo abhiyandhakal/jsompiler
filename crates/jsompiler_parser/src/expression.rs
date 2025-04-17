@@ -164,6 +164,10 @@ impl Parser {
             }
         }
 
+        if self.peek().token == Token::Delimiter(DelimiterToken::NewLine) {
+            self.advance(); // Consume newline
+        }
+
         Ok(expr)
     }
 
