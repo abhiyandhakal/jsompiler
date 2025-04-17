@@ -127,6 +127,7 @@ impl Parser {
             Token::ContextualKeyword(ContextualKeywordToken::Yield) => self.parse_yield_statement(),
             Token::Delimiter(DelimiterToken::OpenBrace) => self.parse_brace_block_or_object(),
             Token::Delimiter(DelimiterToken::OpenParen) => self.parenthesis_expression(),
+            Token::EOF => Ok(None),
             _ => Err(vec![Error {
                 error_kind: ErrorKind::UnexpectedToken,
                 message: "Expected statement".to_string(),
