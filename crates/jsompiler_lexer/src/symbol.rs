@@ -178,6 +178,7 @@ pub enum NumberLiteral {
     Value(f64),
     NaN,
     Infinity,
+    BigInt(num_bigint::BigInt),
 }
 
 #[derive(Debug, PartialEq, Clone)]

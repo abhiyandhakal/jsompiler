@@ -7,8 +7,8 @@ use crate::{
 
 impl Lexer {
     pub fn lex_operator_punctuation(&mut self, c: char) -> Result<Option<Lexeme>, Error> {
-        // Don't allow lexing of '.' after floating point number
         if c == '.' {
+            // Don't allow lexing of '.' after floating point number
             if let Some(lexeme) = self.tokens.last() {
                 if lexeme.text.contains(".") {
                     return Err(Error {
@@ -18,6 +18,11 @@ impl Lexer {
                         error_kind: ErrorKind::LexerError,
                     });
                 }
+            }
+
+            // For floating point numbers like .123
+            if self.peek_next_char().is_some_and(|ch| ch.is_ascii_digit()) {
+                return self.lex_number();
             }
         }
 

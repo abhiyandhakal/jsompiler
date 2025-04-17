@@ -498,6 +498,7 @@ fn test_exponential_number() {
     let input = "12e2";
     let mut lexer = Lexer::new(input.to_string());
     lexer.scan_all_tokens();
+    assert_eq!(lexer.errors, vec![]);
     assert_eq!(
         lexer
             .tokens
@@ -519,4 +520,100 @@ fn test_invalid_exponential_number() {
         lexer.scan_all_tokens();
         assert_ne!(lexer.errors, vec![]);
     }
+}
+
+#[test]
+fn test_bigint() {
+    let input = "12n";
+    let mut lexer = Lexer::new(input.to_string());
+    lexer.scan_all_tokens();
+    assert_eq!(lexer.errors, vec![]);
+    assert_eq!(
+        lexer
+            .tokens
+            .iter()
+            .map(|l| l.token.clone())
+            .collect::<Vec<_>>(),
+        vec![
+            Token::Literal(LiteralToken::Number(NumberLiteral::BigInt(
+                num_bigint::BigInt::from(12)
+            ))),
+            Token::EOF
+        ]
+    );
+}
+
+#[test]
+fn test_floating_numbers() {
+    let inputs = [".12", "0.12"];
+    for input in inputs {
+        let mut lexer = Lexer::new(input.to_string());
+        lexer.scan_all_tokens();
+        assert_eq!(lexer.errors, vec![]);
+        assert_eq!(
+            lexer
+                .tokens
+                .iter()
+                .map(|l| l.token.clone())
+                .collect::<Vec<_>>(),
+            vec![
+                Token::Literal(LiteralToken::Number(NumberLiteral::Value(0.12))),
+                Token::EOF
+            ]
+        );
+    }
+}
+
+#[test]
+fn test_legacy_octal_syntax() {
+    let input = "012";
+    let mut lexer = Lexer::new(input.to_string());
+    lexer.scan_all_tokens();
+    assert_eq!(lexer.errors, vec![]);
+    assert_eq!(
+        lexer
+            .tokens
+            .iter()
+            .map(|l| l.token.clone())
+            .collect::<Vec<_>>(),
+        vec![
+            Token::Literal(LiteralToken::Number(NumberLiteral::Value(10.))),
+            Token::EOF
+        ]
+    );
+
+    let input = "018";
+    let mut lexer = Lexer::new(input.to_string());
+    lexer.scan_all_tokens();
+    assert_eq!(lexer.errors, vec![]);
+    assert_eq!(
+        lexer
+            .tokens
+            .iter()
+            .map(|l| l.token.clone())
+            .collect::<Vec<_>>(),
+        vec![
+            Token::Literal(LiteralToken::Number(NumberLiteral::Value(18.))),
+            Token::EOF
+        ]
+    );
+}
+
+#[test]
+fn test_zero() {
+    let input = "0";
+    let mut lexer = Lexer::new(input.to_string());
+    lexer.scan_all_tokens();
+    assert_eq!(lexer.errors, vec![]);
+    assert_eq!(
+        lexer
+            .tokens
+            .iter()
+            .map(|l| l.token.clone())
+            .collect::<Vec<_>>(),
+        vec![
+            Token::Literal(LiteralToken::Number(NumberLiteral::Value(0.))),
+            Token::EOF
+        ]
+    );
 }
