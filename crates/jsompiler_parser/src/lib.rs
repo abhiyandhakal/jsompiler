@@ -31,7 +31,7 @@ use jsompiler_lexer::symbol::{
 #[derive(Debug)]
 pub enum Node {
     Expression(Expression),
-    Statement(Statement),
+    Statement(Vec<Statement>),
 }
 
 #[derive(Debug, Clone)]
@@ -83,19 +83,18 @@ impl Parser {
                 _ => {}
             }
             match self.parse_statement() {
-                Ok(Some(statement)) => {
+                Ok(statement) => {
                     self.ast.push(Node::Statement(statement));
                 }
                 Err(errors) => {
                     self.errors.extend(errors);
                     break;
                 }
-                _ => {}
             }
         }
     }
 
-    fn parse_statement(&mut self) -> Result<Option<Statement>, Vec<Error>> {
+    fn parse_statement(&mut self) -> Result<Vec<Statement>, Vec<Error>> {
         match &self.peek().token {
             Token::Delimiter(DelimiterToken::Semicolon)
             | Token::Delimiter(DelimiterToken::NewLine) => {
@@ -113,11 +112,8 @@ impl Parser {
             | Token::Keyword(KeywordToken::Var)
             | Token::Keyword(KeywordToken::Const) => {
                 let stmts = self.parse_let_statement()?;
-                for stmt in stmts {
-                    let stmt = stmt.unwrap();
-                    self.ast.push(Node::Statement(stmt));
-                }
-                Ok(None)
+                self.ast.push(Node::Statement(stmts));
+                Ok(vec![])
             }
             Token::Keyword(KeywordToken::Return) => self.parse_return_statement(),
             Token::Keyword(KeywordToken::If) => self.parse_if_statement(),
@@ -127,7 +123,7 @@ impl Parser {
             Token::ContextualKeyword(ContextualKeywordToken::Yield) => self.parse_yield_statement(),
             Token::Delimiter(DelimiterToken::OpenBrace) => self.parse_brace_block_or_object(),
             Token::Delimiter(DelimiterToken::OpenParen) => self.parenthesis_expression(),
-            Token::EOF => Ok(None),
+            Token::EOF => Ok(vec![]),
             _ => Err(vec![Error {
                 error_kind: ErrorKind::UnexpectedToken,
                 message: "Expected statement".to_string(),

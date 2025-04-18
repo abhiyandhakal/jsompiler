@@ -185,10 +185,10 @@ impl Parser {
 
         // Parse parameters
         let function = self.parse_function_statement()?;
-        match function {
+        match function.first() {
             Some(func) => Ok(Property::Method {
                 key,
-                function: func,
+                function: func.clone(),
             }),
             None => {
                 return Err(vec![Error {
@@ -287,8 +287,8 @@ impl Parser {
         }
 
         let sstms = self.parse_block_statement()?;
-        match sstms {
-            Some(block_stmt) => return Ok(block_stmt),
+        match sstms.first() {
+            Some(block_stmt) => return Ok(block_stmt.clone()),
             None => Err(vec![Error {
                 error_kind: ErrorKind::UnexpectedToken,
                 message: "Expected a block statement in function body".to_string(),
@@ -299,7 +299,7 @@ impl Parser {
     }
 
     // Add this helper method to recognize object literals vs block statements
-    pub fn parse_brace_block_or_object(&mut self) -> Result<Option<Statement>, Vec<Error>> {
+    pub fn parse_brace_block_or_object(&mut self) -> Result<Vec<Statement>, Vec<Error>> {
         let checkpoint = self.current;
         self.advance(); // Consume `{`
 
@@ -340,7 +340,7 @@ impl Parser {
 
         if is_object_literal {
             let expr = self.parse_object_expression()?;
-            Ok(Some(Statement::ExpressionStatement(expr)))
+            Ok(vec![Statement::ExpressionStatement(expr)])
         } else {
             self.parse_block_statement()
         }

@@ -13,7 +13,7 @@ pub struct LetStatement {
 }
 
 impl Parser {
-    pub fn parse_let_statement(&mut self) -> Result<Vec<Option<Statement>>, Vec<Error>> {
+    pub fn parse_let_statement(&mut self) -> Result<Vec<Statement>, Vec<Error>> {
         if !self.match_token(&Token::ContextualKeyword(ContextualKeywordToken::Let))
             && !self.match_token(&Token::Keyword(KeywordToken::Var))
             && !self.match_token(&Token::Keyword(KeywordToken::Const))
@@ -42,7 +42,7 @@ impl Parser {
                     None
                 };
 
-                declarations.push(Some(Statement::LetStatement(LetStatement {
+                declarations.push(Statement::LetStatement(LetStatement {
                     token: keyword_token.token.clone(),
                     name: Identifier {
                         token: name.clone(),
@@ -50,7 +50,7 @@ impl Parser {
                     },
                     value: value
                         .unwrap_or_else(|| Box::new(Expression::Literal(LiteralToken::Undefined))),
-                })));
+                }));
             } else {
                 return Err(vec![Error {
                     error_kind: ErrorKind::UnexpectedToken,

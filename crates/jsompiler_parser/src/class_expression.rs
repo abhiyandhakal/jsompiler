@@ -17,7 +17,7 @@ pub enum ClassElement {
     MethodDefinition {
         name: ClassElementName,
         params: Vec<Parameter>,
-        body: Option<Statement>,
+        body: Vec<Statement>,
         is_static: bool,
     },
     FieldDefinition {
@@ -26,7 +26,7 @@ pub enum ClassElement {
         is_static: bool,
     },
     StaticBlock {
-        body: Option<Statement>,
+        body: Vec<Statement>,
     },
 }
 

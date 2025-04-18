@@ -6,7 +6,7 @@ use jsompiler_lexer::symbol::{DelimiterToken, KeywordToken, OperatorToken, Token
 pub struct FunctionStatement {
     pub name: Identifier,
     pub parameters: Vec<Parameter>,
-    pub body: Box<Option<Statement>>,
+    pub body: Box<Vec<Statement>>,
 }
 
 #[derive(Clone, Debug)]
@@ -16,7 +16,7 @@ pub enum Parameter {
 }
 
 impl Parser {
-    pub fn parse_function_statement(&mut self) -> Result<Option<Statement>, Vec<Error>> {
+    pub fn parse_function_statement(&mut self) -> Result<Vec<Statement>, Vec<Error>> {
         // Expect `function` keyword
         if !self.match_token(&Token::Keyword(KeywordToken::Function)) {
             return Err(vec![Error {
@@ -59,11 +59,11 @@ impl Parser {
         let body = self.parse_block_statement()?;
 
         // Return FunctionStatement node
-        Ok(Some(Statement::FunctionStatement(FunctionStatement {
+        Ok(vec![Statement::FunctionStatement(FunctionStatement {
             name,
             parameters,
             body: Box::new(body),
-        })))
+        })])
     }
 
     pub fn parse_function_parameters(&mut self) -> Result<Vec<Parameter>, Vec<Error>> {

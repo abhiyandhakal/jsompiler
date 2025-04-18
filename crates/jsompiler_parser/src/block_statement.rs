@@ -5,11 +5,11 @@ use jsompiler_lexer::symbol::{DelimiterToken, Token};
 #[derive(Debug, Clone)]
 pub struct BlockStatement {
     pub token: Token,
-    pub statements: Vec<Option<Statement>>,
+    pub statements: Vec<Statement>,
 }
 
 impl Parser {
-    pub fn parse_block_statement(&mut self) -> Result<Option<Statement>, Vec<Error>> {
+    pub fn parse_block_statement(&mut self) -> Result<Vec<Statement>, Vec<Error>> {
         self.advance(); // consume '{'
         let mut statements = Vec::new();
 
@@ -32,15 +32,15 @@ impl Parser {
                     }]);
                 }
                 _ => {
-                    let stmt = self.parse_statement()?;
-                    statements.push(stmt);
+                    let mut stmt = self.parse_statement()?;
+                    statements.append(&mut stmt);
                 }
             }
         }
 
-        Ok(Some(Statement::BlockStatement(BlockStatement {
+        Ok(vec![Statement::BlockStatement(BlockStatement {
             token: Token::Delimiter(DelimiterToken::OpenBrace),
             statements,
-        })))
+        })])
     }
 }

@@ -4,17 +4,17 @@ use jsompiler_lexer::symbol::{DelimiterToken, Token};
 
 #[derive(Debug, Clone)]
 pub struct YieldStatement {
-    pub expression: Option<Expression>,
+    pub expression: Vec<Expression>,
 }
 
 impl Parser {
-    pub fn parse_yield_statement(&mut self) -> Result<Option<Statement>, Vec<Error>> {
+    pub fn parse_yield_statement(&mut self) -> Result<Vec<Statement>, Vec<Error>> {
         self.advance(); // Consume 'yield' keyword
 
         let expression = if self.peek().token == Token::Delimiter(DelimiterToken::Semicolon) {
-            None
+            vec![]
         } else {
-            Some(self.expression()?)
+            vec![self.expression()?]
         };
 
         // Expect semicolon
@@ -27,8 +27,8 @@ impl Parser {
             }]);
         }
 
-        Ok(Some(Statement::YieldStatement(YieldStatement {
+        Ok(vec![Statement::YieldStatement(YieldStatement {
             expression,
-        })))
+        })])
     }
 }

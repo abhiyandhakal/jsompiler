@@ -9,7 +9,7 @@ pub struct ReturnStatement {
 }
 
 impl Parser {
-    pub fn parse_return_statement(&mut self) -> Result<Option<Statement>, Vec<Error>> {
+    pub fn parse_return_statement(&mut self) -> Result<Vec<Statement>, Vec<Error>> {
         if !self.match_token(&Token::Keyword(KeywordToken::Return)) {
             return Err(vec![Error {
                 error_kind: ErrorKind::UnexpectedToken,
@@ -21,9 +21,9 @@ impl Parser {
 
         let value = Box::new(self.expression()?);
 
-        Ok(Some(Statement::ReturnStatement(ReturnStatement {
+        Ok(vec![Statement::ReturnStatement(ReturnStatement {
             token: Token::Keyword(KeywordToken::Return),
             value,
-        })))
+        })])
     }
 }

@@ -9,7 +9,7 @@ pub struct AssignmentStatement {
 }
 
 impl Parser {
-    pub fn parse_assignment_statement(&mut self) -> Result<Option<Statement>, Vec<Error>> {
+    pub fn parse_assignment_statement(&mut self) -> Result<Vec<Statement>, Vec<Error>> {
         let target = self.expression()?;
 
         // check for an assignment
@@ -21,10 +21,10 @@ impl Parser {
                     property: _,
                 } => {
                     let value = self.expression()?;
-                    return Ok(Some(Statement::AssignmentStatement(AssignmentStatement {
+                    return Ok(vec![Statement::AssignmentStatement(AssignmentStatement {
                         target,
                         value,
-                    })));
+                    })]);
                 }
                 _ => {
                     return Err(vec![Error {
@@ -50,6 +50,6 @@ impl Parser {
             _ => {}
         }
 
-        Ok(Some(Statement::ExpressionStatement(target)))
+        Ok(vec![Statement::ExpressionStatement(target)])
     }
 }

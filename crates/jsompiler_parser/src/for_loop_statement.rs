@@ -4,14 +4,14 @@ use jsompiler_lexer::symbol::{DelimiterToken, KeywordToken, Token};
 
 #[derive(Debug, Clone)]
 pub struct ForLoopStatement {
-    pub initializer: Box<Option<Statement>>,
-    pub condition: Box<Option<Statement>>,
-    pub increment: Box<Option<Statement>>,
-    pub body: Box<Option<Statement>>,
+    pub initializer: Box<Vec<Statement>>,
+    pub condition: Box<Vec<Statement>>,
+    pub increment: Box<Vec<Statement>>,
+    pub body: Box<Vec<Statement>>,
 }
 
 impl Parser {
-    pub fn parser_for_loop_statement(&mut self) -> Result<Option<Statement>, Vec<Error>> {
+    pub fn parser_for_loop_statement(&mut self) -> Result<Vec<Statement>, Vec<Error>> {
         if !self.match_token(&Token::Keyword(KeywordToken::For)) {
             return Err(vec![Error {
                 error_kind: crate::ErrorKind::UnexpectedToken,
@@ -32,9 +32,8 @@ impl Parser {
         }
 
         // Parse initializer
-        let initializer: Option<Statement>;
+        let mut initializer = vec![];
         if self.peek().token == Token::Delimiter(DelimiterToken::Semicolon) {
-            initializer = None;
             self.advance(); // Consume ';'
         } else {
             initializer = self.parse_statement()?;
@@ -43,9 +42,8 @@ impl Parser {
         println!("Initializers: {:#?}", initializer);
 
         // Parse condition
-        let condition: Option<Statement>;
+        let mut condition = vec![];
         if self.peek().token == Token::Delimiter(DelimiterToken::Semicolon) {
-            condition = None;
             self.advance(); // Consume ';'
         } else {
             condition = self.parse_statement()?;
@@ -54,11 +52,9 @@ impl Parser {
         println!("Condition: {:#?}", condition);
 
         // Parse increment
-        let increment: Option<Statement>;
+        let mut increment = vec![];
         println!("Peek: {:#?}", self.peek());
-        if self.peek().token == Token::Delimiter(DelimiterToken::CloseParen) {
-            increment = None;
-        } else {
+        if self.peek().token != Token::Delimiter(DelimiterToken::CloseParen) {
             increment = self.parse_statement()?;
         }
         println!("Increment: {:#?}", increment);
@@ -86,11 +82,11 @@ impl Parser {
             }]);
         }
 
-        Ok(Some(Statement::ForLoopStatement(ForLoopStatement {
+        Ok(vec![Statement::ForLoopStatement(ForLoopStatement {
             initializer: Box::new(initializer),
             condition: Box::new(condition),
             increment: Box::new(increment),
             body: Box::new(body),
-        })))
+        })])
     }
 }
