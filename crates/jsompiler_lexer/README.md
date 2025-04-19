@@ -44,8 +44,7 @@ const pi = 3.1416;
 
 ### Keywords:
 
-`const`, `const`, `function`, `void`, `typeof`, `if`, `return`, `else`, `instanceof`, `in`, `while`, `for`, `do`, `true`, `false`, `exports`, `break`, `continue`, `switch`, `null`, `case`, `debugger`, `class`, `new`, `this`, `super`, `import`, `export`, `default`, `try`, `catch`, `finally`, `throw`, `enum`, `extends`, `delete`
-
+`const`, `function`, `void`, `typeof`, `if`, `return`, `else`, `instanceof`, `in`, `while`, `for`, `do`, `true`, `false`, `exports`, `break`, `continue`, `switch`, `null`, `case`, `debugger`, `class`, `new`, `this`, `super`, `import`, `export`, `default`, `try`, `catch`, `finally`, `throw`, `enum`, `extends`, `delete`
 ### Contextual Keywords:
 
 `let`, `package`, `interface`, `get`, `set`, `arguments`, `public`, `eval`, `protected`, `private`, `meta`, `target`, `async`, `await`, `from`, `as`, `from`, `as`, `of`, `yield`, `static`, `with`, `implements`
