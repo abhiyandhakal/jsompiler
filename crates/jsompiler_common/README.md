@@ -1,6 +1,10 @@
+# jsompiler_common
+
 The `jsompiler_common` is part of **jsompiler**, a Rust based JavaScript compiler.
 
 It contains shared components and functionalities, which is to be used by other parts of the compiler.
+
+## API Documentation
 
 The code contain `ErrorKind` enum and an `Error` struct for error handling required for the Lexer and Parser.
 
