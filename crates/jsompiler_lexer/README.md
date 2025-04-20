@@ -11,8 +11,6 @@ The `jsompiler_lexer` is responsible for the **lexical analysis** part of the `j
 - Easily extendable token definitions
 - **Limitation:** Unicode escape sequences (e.g., `\u0041`) are **not yet supported**.
 
-# API Documentation
-
 ## Installation
 
 Add `jsompiler_lexer` to your `Cargo.toml`:
@@ -43,6 +41,22 @@ const pi = 3.1416;
 | 3.1416  | Literal(Number(Value(3.1416))) |
 | ;       | Delimiter(Semicolon)           |
 | EOF     | EOF                            |
+
+## Usage
+
+Add this crate to your project
+
+```rust
+use jsompiler_lexer::Lexer;
+
+let source = "const pi = 3.1416;";
+let mut lexer = Lexer::new(source);
+lexer.scan_all_tokens();
+println!("{:#?}", lexer.tokens);
+println!("{:#?}", lexer.errors);
+```
+
+# API Documentation
 
 ## Tokens Supported
 
@@ -91,17 +105,3 @@ const pi = 3.1416;
 ### Literal Types
 
 `undefined`, `null`, `NaN`, `Infinity`
-
-## Usage
-
-Add this crate to your project
-
-```rust
-use jsompiler_lexer::Lexer;
-
-let source = "const pi = 3.1416;";
-let mut lexer = Lexer::new(source);
-lexer.scan_all_tokens();
-println!("{:#?}", lexer.tokens);
-println!("{:#?}", lexer.errors);
-```
