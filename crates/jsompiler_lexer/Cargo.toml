@@ -5,7 +5,7 @@ edition = "2024"
 description = "Lexer for JavaScript"
 license = "MIT"
 repository = "https://github.com/abhiyandhakal/jsompiler"
-readme = "../../README.md"
+readme = "README.md"
 
 [dependencies]
 lazy_static = "1.5.0"
