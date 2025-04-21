@@ -19,18 +19,18 @@ dependencies = [
 [[package]]
 name = "jsompiler_common"
 version = "0.1.0"
-
-[[package]]
-name = "jsompiler_common"
-version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c9d4cd6250456154a9c85ac966b123bf6c651a16c9faf7f54e792adc764b6485"
 
 [[package]]
+name = "jsompiler_common"
+version = "0.1.2"
+
+[[package]]
 name = "jsompiler_lexer"
-version = "0.2.0"
+version = "0.2.2"
 dependencies = [
- "jsompiler_common 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "jsompiler_common 0.1.0",
  "lazy_static",
  "num-bigint",
 ]
@@ -39,7 +39,7 @@ dependencies = [
 name = "jsompiler_parser"
 version = "0.1.0"
 dependencies = [
- "jsompiler_common 0.1.0",
+ "jsompiler_common 0.1.2",
  "jsompiler_lexer",
 ]
 

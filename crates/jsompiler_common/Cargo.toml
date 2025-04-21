@@ -1,8 +1,8 @@
 [package]
 name = "jsompiler_common"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 description = "Common utilities for jsompiler"
 license = "MIT"
 repository = "https://github.com/abhiyandhakal/jsompiler"
-readme = "README.md"
+readme = "./README.md"
