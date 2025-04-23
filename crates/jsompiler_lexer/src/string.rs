@@ -153,6 +153,10 @@ impl Lexer {
                         processed_string.push('\u{0008}');
                         self.advance(); // Skip `\`
                     }
+                    'u' => {
+                        let c = self.lex_unicode_sequence()?;
+                        processed_string.push(c);
+                    }
                     c => {
                         if c == ch {
                             processed_string.push(ch);
@@ -169,5 +173,89 @@ impl Lexer {
         }
         self.advance();
         Ok(())
+    }
+
+    pub fn lex_unicode_sequence(&mut self) -> Result<char, Error> {
+        self.advance(); // consume '\'
+        self.advance(); // consume 'u'
+
+        if self.get_current_char() == '{' {
+            self.advance(); // Consume '{'
+            let start_pos = self.current;
+
+            // Read hex digits until '}'
+            while self.get_current_char() != '}' && !self.is_at_end() {
+                if !self.get_current_char().is_ascii_hexdigit() {
+                    return Err(Error {
+                        pos: self.current,
+                        line_number: self.line_number,
+                        message: "Invalid Unicode escape sequence".to_string(),
+                        error_kind: ErrorKind::LexerError,
+                    });
+                }
+                self.advance();
+            }
+
+            if self.get_current_char() != '}' {
+                return Err(Error {
+                    pos: self.current,
+                    line_number: self.line_number,
+                    message: "Invalid Unicode escape sequence".to_string(),
+                    error_kind: ErrorKind::LexerError,
+                });
+            }
+
+            // Extract the hex value
+            let hex_str: String = self.source[start_pos..self.current].iter().collect();
+
+            // Parse the hex value
+            let code_point = u32::from_str_radix(&hex_str, 16).map_err(|_| Error {
+                pos: self.current,
+                line_number: self.line_number,
+                message: "Invalid Unicode code point".to_string(),
+                error_kind: ErrorKind::LexerError,
+            })?;
+
+            let c = char::from_u32(code_point).ok_or_else(|| Error {
+                pos: self.current,
+                line_number: self.line_number,
+                message: "Invalid Unicode code point".to_string(),
+                error_kind: ErrorKind::LexerError,
+            })?;
+
+            Ok(c)
+        } else {
+            let mut hex_str = String::with_capacity(4);
+            for _ in 0..4 {
+                if self.is_at_end() || !self.get_current_char().is_ascii_hexdigit() {
+                    return Err(Error {
+                        pos: self.current,
+                        line_number: self.line_number,
+                        message: "Invalid Unicode escape sequence".to_string(),
+                        error_kind: ErrorKind::LexerError,
+                    });
+                }
+                hex_str.push(self.get_current_char());
+                self.advance();
+            }
+            self.current -= 1;
+
+            // Parse the hex value
+            let code_point = u32::from_str_radix(&hex_str, 16).map_err(|_| Error {
+                pos: self.current,
+                line_number: self.line_number,
+                message: "Invalid Unicode code point".to_string(),
+                error_kind: ErrorKind::LexerError,
+            })?;
+
+            let c = char::from_u32(code_point).ok_or_else(|| Error {
+                pos: self.current,
+                line_number: self.line_number,
+                message: "Invalid Unicode code point".to_string(),
+                error_kind: ErrorKind::LexerError,
+            })?;
+
+            Ok(c)
+        }
     }
 }
