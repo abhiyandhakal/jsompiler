@@ -7,7 +7,7 @@ mod string;
 pub mod symbol;
 mod test;
 
-use jsompiler_common::Error;
+use jsompiler_common::{Error, ErrorKind};
 use symbol::{DelimiterToken, Lexeme, Token, lexeme};
 
 pub struct Lexer {
@@ -96,7 +96,24 @@ impl Lexer {
                 self.advance();
                 self.lex_string(c)
             }
-
+            '\\' => {
+                let next_char = self.peek_next_char().unwrap();
+                if next_char == 'u' {
+                    let c = self.lex_unicode_sequence()?;
+                    self.advance();
+                    Ok(Some(lexeme(
+                        c.to_string(),
+                        Token::Identifier(c.to_string()),
+                    )))
+                } else {
+                    Err(Error {
+                        pos: self.current,
+                        line_number: self.line_number,
+                        message: "Invalid escape sequence".to_string(),
+                        error_kind: ErrorKind::LexerError,
+                    })
+                }
+            }
             '/' => self.lex_comment(), // lex_comment handles advancing
             '<' => self.lex_jsx(),
             _ => {
