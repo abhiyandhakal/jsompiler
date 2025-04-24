@@ -617,3 +617,51 @@ fn test_zero() {
         ]
     );
 }
+
+#[test]
+fn test_unicode_basic_bmp_escape() {
+    let inputs = [r#"'\u0041'"#, r#"'\u{41}'"#];
+    for input in inputs {
+        let mut lexer = Lexer::new(input.to_string());
+        lexer.scan_all_tokens();
+        assert_eq!(lexer.errors, vec![]);
+        assert_eq!(
+            lexer
+                .tokens
+                .iter()
+                .map(|l| l.token.clone())
+                .collect::<Vec<_>>(),
+            vec![
+                Token::Literal(LiteralToken::String("A".to_string())),
+                Token::EOF
+            ]
+        );
+    }
+}
+
+#[test]
+fn test_invalid_unicode_escape() {
+    let input = r#"'bad escape: \u{ZZZZ}'"#;
+    let mut lexer = Lexer::new(input.to_string());
+    lexer.scan_all_tokens();
+    assert!(!lexer.errors.is_empty()); // Should contain error
+}
+
+#[test]
+fn test_escaped_backslash_unicode_like() {
+    let input = r#"'not unicode: \\u{0041}'"#;
+    let mut lexer = Lexer::new(input.to_string());
+    lexer.scan_all_tokens();
+    assert_eq!(lexer.errors, vec![]);
+    assert_eq!(
+        lexer
+            .tokens
+            .iter()
+            .map(|l| l.token.clone())
+            .collect::<Vec<_>>(),
+        vec![
+            Token::Literal(LiteralToken::String("not unicode: \\u{0041}".to_string())),
+            Token::EOF
+        ]
+    );
+}
