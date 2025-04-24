@@ -69,6 +69,17 @@ impl Lexer {
                 }
             }
         }
+
+        if self.get_current_char() == '\\' {
+            let next_char = self.peek_next_char().unwrap();
+            if next_char == 'u' {
+                let c = self.lex_unicode_sequence()?;
+                processed_string.push(c);
+                self.advance();
+            } else {
+                self.advance(); // Skip `\`
+            }
+        }
         self.tokens.push(lexeme(
             processed_string.clone(),
             Token::Literal(LiteralToken::String(processed_string)),
