@@ -1,9 +1,9 @@
 use super::{Identifier, Parser, Statement};
-use crate::{Error, ErrorKind};
+use crate::{expression::Expression, Error, ErrorKind};
 use jsompiler_lexer::symbol::{DelimiterToken, KeywordToken, OperatorToken, Token};
 
 #[derive(Clone, Debug)]
-pub struct FunctionStatement {
+pub struct FunctionExpression {
     pub name: Identifier,
     pub parameters: Vec<Parameter>,
     pub body: Box<Vec<Statement>>,
@@ -16,7 +16,7 @@ pub enum Parameter {
 }
 
 impl Parser {
-    pub fn parse_function_statement(&mut self) -> Result<Vec<Statement>, Vec<Error>> {
+    pub fn parse_function_expression(&mut self) -> Result<Expression, Vec<Error>> {
         // Expect `function` keyword
         if !self.match_token(&Token::Keyword(KeywordToken::Function)) {
             return Err(vec![Error {
@@ -25,6 +25,11 @@ impl Parser {
                 line_number: 1,
                 pos: 2,
             }]);
+        }
+
+        if self.peek().token == Token::Operator(OperatorToken::Asterisk) {
+            self.advance(); // Consume the *
+                            // return self.parse_generator_function();
         }
 
         // Expect function name (identifier)
@@ -59,11 +64,11 @@ impl Parser {
         let body = self.parse_block_statement()?;
 
         // Return FunctionStatement node
-        Ok(vec![Statement::FunctionStatement(FunctionStatement {
+        Ok(Expression::FunctionExpression(FunctionExpression {
             name,
             parameters,
             body: Box::new(body),
-        })])
+        }))
     }
 
     pub fn parse_function_parameters(&mut self) -> Result<Vec<Parameter>, Vec<Error>> {
@@ -173,5 +178,45 @@ impl Parser {
         }
 
         Ok(parameters)
+    }
+
+    pub fn parse_generator_function(&mut self) -> Result<Option<Expression>, Vec<Error>> {
+        // Expect function name (identifier)
+        let name = if let Token::Identifier(_) = self.peek().token {
+            self.advance();
+            Identifier {
+                token: self.previous().clone(),
+                value: self.previous().text.clone(),
+            }
+        } else {
+            return Err(vec![Error {
+                error_kind: ErrorKind::UnexpectedToken,
+                message: "Expected function name".to_string(),
+                line_number: 1,
+                pos: 2,
+            }]);
+        };
+
+        let parameters = self.parse_function_parameters()?;
+
+        // Expect '{' (Start of function body)
+        if !self.match_token(&Token::Delimiter(DelimiterToken::OpenBrace)) {
+            return Err(vec![Error {
+                error_kind: ErrorKind::UnexpectedToken,
+                message: "Expected '{' before function body".to_string(),
+                line_number: 1,
+                pos: 2,
+            }]);
+        }
+
+        // Parse function body (a block statement)
+        let body = self.parse_block_statement()?;
+
+        // Return FunctionStatement node
+        Ok(Some(Expression::FunctionExpression(FunctionExpression {
+            name,
+            parameters,
+            body: Box::new(body),
+        })))
     }
 }

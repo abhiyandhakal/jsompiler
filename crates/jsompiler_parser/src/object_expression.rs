@@ -23,7 +23,7 @@ pub enum Property {
     Shorthand(String), // For shorthand properties like { x } instead of { x: x }
     Method {
         key: PropertyKey,
-        function: Statement,
+        function: Expression,
     },
     Getter {
         key: PropertyKey,
@@ -184,21 +184,8 @@ impl Parser {
         self.advance();
 
         // Parse parameters
-        let function = self.parse_function_statement()?;
-        match function.first() {
-            Some(func) => Ok(Property::Method {
-                key,
-                function: func.clone(),
-            }),
-            None => {
-                return Err(vec![Error {
-                    error_kind: ErrorKind::SyntaxError,
-                    message: "Expected function body".to_string(),
-                    line_number: 1,
-                    pos: 2,
-                }]);
-            }
-        }
+        let function = self.parse_function_expression()?;
+        Ok(Property::Method { key, function })
     }
 
     fn parse_accessor_property(&mut self) -> Result<Property, Vec<Error>> {

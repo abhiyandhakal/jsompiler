@@ -3,7 +3,7 @@ mod block_statement;
 mod class_expression;
 mod expression;
 mod for_loop_statement;
-mod function_statement;
+mod function_expression;
 mod if_statement;
 mod let_statement;
 mod object_expression;
@@ -15,7 +15,6 @@ use assignment_statement::AssignmentStatement;
 use block_statement::BlockStatement;
 use expression::Expression;
 use for_loop_statement::ForLoopStatement;
-use function_statement::FunctionStatement;
 use if_statement::IfStatement;
 use let_statement::LetStatement;
 use return_statement::ReturnStatement;
@@ -42,7 +41,6 @@ pub enum Statement {
     BlockStatement(BlockStatement),
     IfStatement(IfStatement),
     WhileStatement(WhileStatement),
-    FunctionStatement(FunctionStatement),
     AssignmentStatement(AssignmentStatement),
     ForLoopStatement(ForLoopStatement),
     YieldStatement(YieldStatement),
@@ -104,22 +102,18 @@ impl Parser {
             Token::Literal(_)
             | Token::Operator(_)
             | Token::Keyword(KeywordToken::Class)
+            | Token::Keyword(KeywordToken::Function)
             | Token::Delimiter(DelimiterToken::OpenBracket) => self.parse_expression(),
             Token::Identifier(_) | Token::Keyword(KeywordToken::This) => {
                 self.parse_assignment_statement()
             }
             Token::ContextualKeyword(ContextualKeywordToken::Let)
             | Token::Keyword(KeywordToken::Var)
-            | Token::Keyword(KeywordToken::Const) => {
-                let stmts = self.parse_let_statement()?;
-                self.ast.push(Node::Statement(stmts));
-                Ok(vec![])
-            }
+            | Token::Keyword(KeywordToken::Const) => self.parse_let_statement(),
             Token::Keyword(KeywordToken::Return) => self.parse_return_statement(),
             Token::Keyword(KeywordToken::If) => self.parse_if_statement(),
             Token::Keyword(KeywordToken::While) => self.parse_while_statement(),
             Token::Keyword(KeywordToken::For) => self.parser_for_loop_statement(),
-            Token::Keyword(KeywordToken::Function) => self.parse_function_statement(),
             Token::ContextualKeyword(ContextualKeywordToken::Yield) => self.parse_yield_statement(),
             Token::Delimiter(DelimiterToken::OpenBrace) => self.parse_brace_block_or_object(),
             Token::Delimiter(DelimiterToken::OpenParen) => self.parenthesis_expression(),

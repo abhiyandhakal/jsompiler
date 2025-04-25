@@ -1,4 +1,4 @@
-use crate::function_statement::Parameter;
+use crate::function_expression::Parameter;
 use crate::{expression::Expression, Identifier, Parser, Statement};
 use crate::{Error, ErrorKind};
 use jsompiler_lexer::symbol::{

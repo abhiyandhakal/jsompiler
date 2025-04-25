@@ -1,5 +1,6 @@
 use super::{Identifier, Parser, Statement};
 use crate::class_expression::ClassExpression;
+use crate::function_expression::FunctionExpression;
 use crate::object_expression::Property;
 use crate::{Error, ErrorKind};
 use jsompiler_lexer::symbol::{
@@ -37,6 +38,7 @@ pub enum Expression {
         properties: Vec<Property>,
     },
     ClassExpression(ClassExpression),
+    FunctionExpression(FunctionExpression),
 }
 
 impl Parser {
@@ -82,6 +84,9 @@ impl Parser {
         }
         if self.peek().token == Token::Keyword(KeywordToken::Class) {
             return self.parse_class_expression();
+        }
+        if self.peek().token == Token::Keyword(KeywordToken::Function) {
+            return self.parse_function_expression();
         }
         if self.peek().token == Token::Operator(OperatorToken::Spread) {
             return self.parse_spread_operator();
