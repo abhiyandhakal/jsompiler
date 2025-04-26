@@ -29,7 +29,7 @@ impl Parser {
 
         if self.peek().token == Token::Operator(OperatorToken::Asterisk) {
             self.advance(); // Consume the *
-                            // return self.parse_generator_function();
+            return self.parse_generator_function();
         }
 
         // Expect function name (identifier)
@@ -180,7 +180,7 @@ impl Parser {
         Ok(parameters)
     }
 
-    pub fn parse_generator_function(&mut self) -> Result<Option<Expression>, Vec<Error>> {
+    pub fn parse_generator_function(&mut self) -> Result<Expression, Vec<Error>> {
         // Expect function name (identifier)
         let name = if let Token::Identifier(_) = self.peek().token {
             self.advance();
@@ -213,10 +213,10 @@ impl Parser {
         let body = self.parse_block_statement()?;
 
         // Return FunctionStatement node
-        Ok(Some(Expression::FunctionExpression(FunctionExpression {
+        Ok(Expression::GeneratorExpression(FunctionExpression {
             name,
             parameters,
             body: Box::new(body),
-        })))
+        }))
     }
 }

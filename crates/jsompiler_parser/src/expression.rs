@@ -39,6 +39,7 @@ pub enum Expression {
     },
     ClassExpression(ClassExpression),
     FunctionExpression(FunctionExpression),
+    GeneratorExpression(FunctionExpression),
 }
 
 impl Parser {
