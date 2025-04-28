@@ -42,6 +42,7 @@ pub enum Expression {
     FunctionExpression(FunctionExpression),
     GeneratorExpression(FunctionExpression),
     AsyncFunctionExpression(FunctionExpression),
+    AsyncGeneratorExpression(FunctionExpression),
 }
 
 impl Parser {
@@ -407,7 +408,10 @@ impl Parser {
         let expr = self.parse_function_expression()?;
 
         if let Expression::FunctionExpression(function_expression) = expr {
-            Ok(Expression::AsyncFunctionExpression(function_expression))
+            return Ok(Expression::AsyncFunctionExpression(function_expression));
+        }
+        if let Expression::GeneratorExpression(function_expression) = expr {
+            return Ok(Expression::AsyncGeneratorExpression(function_expression));
         } else {
             Err(vec![Error {
                 error_kind: ErrorKind::UnexpectedToken,
