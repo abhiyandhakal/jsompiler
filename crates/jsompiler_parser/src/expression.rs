@@ -95,6 +95,12 @@ impl Parser {
             return self.parse_spread_operator();
         }
         if self.peek().token
+            == Token::ContextualKeyword(jsompiler_lexer::symbol::ContextualKeywordToken::Async)
+        {
+            return self.parse_async_function_expression();
+        }
+
+        if self.peek().token
             == Token::ContextualKeyword(jsompiler_lexer::symbol::ContextualKeywordToken::Await)
         {
             return self.parse_await_expression();
@@ -394,5 +400,21 @@ impl Parser {
         self.advance(); // Consume 'await'
         let expr = self.expression()?;
         Ok(Expression::AwaitExpression(Box::new(expr)))
+    }
+
+    fn parse_async_function_expression(&mut self) -> Result<Expression, Vec<Error>> {
+        self.advance(); // Consume 'async'
+        let expr = self.parse_function_expression()?;
+
+        if let Expression::FunctionExpression(function_expression) = expr {
+            Ok(Expression::AsyncFunctionExpression(function_expression))
+        } else {
+            Err(vec![Error {
+                error_kind: ErrorKind::UnexpectedToken,
+                message: "Expected async function expression".to_string(),
+                line_number: 1,
+                pos: 2,
+            }])
+        }
     }
 }
