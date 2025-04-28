@@ -103,6 +103,7 @@ impl Parser {
             | Token::Operator(_)
             | Token::Keyword(KeywordToken::Class)
             | Token::Keyword(KeywordToken::Function)
+            | Token::ContextualKeyword(ContextualKeywordToken::Await)
             | Token::Delimiter(DelimiterToken::OpenBracket) => self.parse_expression(),
             Token::Identifier(_) | Token::Keyword(KeywordToken::This) => {
                 self.parse_assignment_statement()

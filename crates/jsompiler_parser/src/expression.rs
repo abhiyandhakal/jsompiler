@@ -37,9 +37,11 @@ pub enum Expression {
     ObjectLiteral {
         properties: Vec<Property>,
     },
+    AwaitExpression(Box<Expression>),
     ClassExpression(ClassExpression),
     FunctionExpression(FunctionExpression),
     GeneratorExpression(FunctionExpression),
+    AsyncFunctionExpression(FunctionExpression),
 }
 
 impl Parser {
@@ -91,6 +93,11 @@ impl Parser {
         }
         if self.peek().token == Token::Operator(OperatorToken::Spread) {
             return self.parse_spread_operator();
+        }
+        if self.peek().token
+            == Token::ContextualKeyword(jsompiler_lexer::symbol::ContextualKeywordToken::Await)
+        {
+            return self.parse_await_expression();
         }
 
         self.comparison() // Start from highest precedence binary operations
@@ -381,5 +388,11 @@ impl Parser {
         self.advance(); // Consume the spread operator
         let expr = self.expression()?;
         Ok(Expression::SpreadElement(Box::new(expr)))
+    }
+
+    fn parse_await_expression(&mut self) -> Result<Expression, Vec<Error>> {
+        self.advance(); // Consume 'await'
+        let expr = self.expression()?;
+        Ok(Expression::AwaitExpression(Box::new(expr)))
     }
 }
