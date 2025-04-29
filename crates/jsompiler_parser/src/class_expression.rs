@@ -20,6 +20,12 @@ pub enum ClassElement {
         body: Vec<Statement>,
         is_static: bool,
     },
+    AsyncMethodDefinition {
+        name: ClassElementName,
+        params: Vec<Parameter>,
+        body: Vec<Statement>,
+        is_static: bool,
+    },
     FieldDefinition {
         name: ClassElementName,
         value: Option<Expression>,
@@ -76,13 +82,17 @@ impl Parser {
             }]);
         }
 
-        let body = self.parse_class_body()?;
-
-        Ok(Expression::ClassExpression(ClassExpression {
-            identifier,
-            heritage: Box::new(heritage),
-            body,
-        }))
+        let body = self.parse_class_body();
+        match body {
+            Ok(body) => Ok(Expression::ClassExpression(ClassExpression {
+                identifier,
+                heritage: Box::new(heritage),
+                body,
+            })),
+            Err(err) => {
+                return Err(err);
+            }
+        }
     }
 
     fn parse_class_body(&mut self) -> Result<Vec<ClassElement>, Vec<Error>> {
@@ -109,8 +119,11 @@ impl Parser {
             }
 
             // Parse a class element
-            let element = self.parse_class_element()?;
-            elements.push(element);
+            let element = self.parse_class_element();
+            match element {
+                Ok(e) => elements.push(e),
+                Err(err) => return Err(err),
+            }
         }
 
         if self.peek().token != Token::Delimiter(DelimiterToken::CloseBrace) {
@@ -140,6 +153,14 @@ impl Parser {
             return self.parse_static_block();
         }
 
+        let is_async =
+            if self.peek().token == Token::ContextualKeyword(ContextualKeywordToken::Async) {
+                self.advance();
+                true
+            } else {
+                false
+            };
+
         let name = match self.peek().token {
             Token::Identifier(_) => ClassElementName::PropertyName(self.peek().text.clone()),
             Token::PrivateIdentifier(_) => {
@@ -161,9 +182,17 @@ impl Parser {
         self.advance(); // Consume the name
 
         if self.peek().token == Token::Delimiter(DelimiterToken::OpenParen) {
-            return self.parse_method(name, is_static);
+            return self.parse_method(name, is_static, is_async);
         } else {
             // Field definition
+            if is_async {
+                return Err(vec![Error {
+                    error_kind: ErrorKind::UnexpectedToken,
+                    message: "Async fields are not allowed ".to_string(),
+                    line_number: 1,
+                    pos: 2,
+                }]);
+            }
             let value = if self.peek().token == Token::Operator(OperatorToken::EqualTo) {
                 self.advance(); // Consume '='
                 Some(self.expression()?)
@@ -203,17 +232,26 @@ impl Parser {
         &mut self,
         name: ClassElementName,
         is_static: bool,
+        is_async: bool,
     ) -> Result<ClassElement, Vec<Error>> {
         let params = self.parse_function_parameters()?;
 
         let body = self.parse_block_statement()?;
-        println!("Parsed method body: {:#?}", body);
 
-        Ok(ClassElement::MethodDefinition {
-            name,
-            params,
-            body,
-            is_static,
-        })
+        if is_async {
+            Ok(ClassElement::AsyncMethodDefinition {
+                name,
+                params,
+                body,
+                is_static,
+            })
+        } else {
+            Ok(ClassElement::MethodDefinition {
+                name,
+                params,
+                body,
+                is_static,
+            })
+        }
     }
 }
