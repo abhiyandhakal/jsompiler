@@ -43,6 +43,10 @@ pub enum Expression {
     GeneratorExpression(FunctionExpression),
     AsyncFunctionExpression(FunctionExpression),
     AsyncGeneratorExpression(FunctionExpression),
+    RegularExpressionLiteral {
+        pattern: String,
+        flags: String,
+    },
 }
 
 impl Parser {
@@ -62,19 +66,15 @@ impl Parser {
         }
     }
     pub fn parse_expression(&mut self) -> Result<Vec<Statement>, Vec<Error>> {
-        if let Ok(expr) = self.expression() {
-            // Push statement to AST
-            // self.ast
-            //     .push(parser::Statement::ExpressionStatement(expr.clone()));
-            Ok(vec![Statement::ExpressionStatement(expr)])
-        } else {
-            self.errors.push(Error {
-                error_kind: ErrorKind::UnexpectedToken,
-                message: "Expected expression".to_string(),
-                line_number: 1,
-                pos: 2,
-            });
-            Err(self.errors.clone())
+        let expr = self.expression();
+        match expr {
+            Ok(expr) => Ok(vec![Statement::ExpressionStatement(expr)]),
+            Err(err) => {
+                for e in err.iter() {
+                    self.errors.push(e.clone());
+                }
+                Err(self.errors.clone())
+            }
         }
     }
 
@@ -105,6 +105,13 @@ impl Parser {
             == Token::ContextualKeyword(jsompiler_lexer::symbol::ContextualKeywordToken::Await)
         {
             return self.parse_await_expression();
+        }
+        if let Token::RegExp {
+            pattern: _,
+            flags: _,
+        } = &self.peek().token
+        {
+            return self.parse_regular_expression();
         }
 
         self.comparison() // Start from highest precedence binary operations
@@ -416,6 +423,22 @@ impl Parser {
             Err(vec![Error {
                 error_kind: ErrorKind::UnexpectedToken,
                 message: "Expected async function expression".to_string(),
+                line_number: 1,
+                pos: 2,
+            }])
+        }
+    }
+
+    fn parse_regular_expression(&mut self) -> Result<Expression, Vec<Error>> {
+        if let Token::RegExp { pattern, flags } = &self.peek().token {
+            let pattern = pattern.clone();
+            let flags = flags.clone();
+            self.advance(); // Consume the regular expression token
+            Ok(Expression::RegularExpressionLiteral { pattern, flags })
+        } else {
+            Err(vec![Error {
+                error_kind: ErrorKind::UnexpectedToken,
+                message: "Expected regular expression".to_string(),
                 line_number: 1,
                 pos: 2,
             }])

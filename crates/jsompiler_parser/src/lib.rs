@@ -106,6 +106,10 @@ impl Parser {
             | Token::ContextualKeyword(ContextualKeywordToken::Await)
             | Token::ContextualKeyword(ContextualKeywordToken::Async)
             | Token::Delimiter(DelimiterToken::OpenBracket) => self.parse_expression(),
+            Token::RegExp {
+                pattern: _,
+                flags: _,
+            } => self.parse_expression(),
             Token::Identifier(_) | Token::Keyword(KeywordToken::This) => {
                 self.parse_assignment_statement()
             }
