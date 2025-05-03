@@ -1,6 +1,6 @@
 use super::{Identifier, Parser, Statement};
 use crate::class_expression::ClassExpression;
-use crate::function_expression::FunctionExpression;
+use crate::function_expression::{FunctionExpression, Parameter};
 use crate::object_expression::Property;
 use crate::{Error, ErrorKind};
 use jsompiler_lexer::symbol::{
@@ -47,24 +47,81 @@ pub enum Expression {
         pattern: String,
         flags: String,
     },
+    ArrowFunctionExpression {
+        parameters: Vec<Parameter>,
+        body: Box<Vec<Statement>>,
+    },
 }
 
 impl Parser {
-    pub fn parenthesis_expression(&mut self) -> Result<Vec<Statement>, Vec<Error>> {
-        // (5+4)
+    pub fn parenthesis_expression(&mut self) -> Result<Expression, Vec<Error>> {
+        let current = self.current;
         self.advance(); // Consuming open parenthesis
-        let exp = self.parse_expression();
-        if self.match_token(&Token::Delimiter(DelimiterToken::CloseParen)) {
-            exp
-        } else {
-            Err(vec![Error {
-                error_kind: ErrorKind::UnexpectedToken,
-                message: "Expected ')'".to_string(),
-                line_number: 1,
-                pos: 2,
-            }])
+        if self.peek().token == Token::Delimiter(DelimiterToken::CloseParen) {
+            if self.next().token != Token::Operator(OperatorToken::Arrow) {
+                return Err(vec![Error {
+                    error_kind: ErrorKind::UnexpectedToken,
+                    message: "Expected expression or arrow function".to_string(),
+                    line_number: 1,
+                    pos: 2,
+                }]);
+            }
+            self.current = current;
+            return self.parse_arrow_expression();
+        }
+        let exp = self.expression();
+
+        match exp {
+            Ok(exp) => {
+                if self.match_token(&Token::Delimiter(DelimiterToken::CloseParen)) {
+                    if self.peek().token == Token::Operator(OperatorToken::Arrow) {
+                        self.current = current;
+                        return self.parse_arrow_expression();
+                    }
+                    Ok(exp)
+                } else {
+                    self.current = current;
+                    self.parse_arrow_expression()
+                }
+            }
+            Err(err) => Err(err),
         }
     }
+
+    pub fn parse_arrow_expression(&mut self) -> Result<Expression, Vec<Error>> {
+        let params = self.parse_function_parameters();
+        if self.peek().token == Token::Operator(OperatorToken::Arrow) {
+            self.advance(); //Consume Arrow Operator
+
+            if self.peek().token == Token::Delimiter(DelimiterToken::OpenBrace) {
+                let body = self.parse_block_statement();
+                match body {
+                    Ok(body) => Ok(Expression::ArrowFunctionExpression {
+                        parameters: params?,
+                        body: Box::new(body),
+                    }),
+                    Err(err) => Err(err),
+                }
+            } else {
+                let body = self.expression();
+                match body {
+                    Ok(body) => Ok(Expression::ArrowFunctionExpression {
+                        parameters: params?,
+                        body: Box::new(vec![Statement::ExpressionStatement(body)]),
+                    }),
+                    Err(err) => Err(err),
+                }
+            }
+        } else {
+            return Err(vec![Error {
+                error_kind: ErrorKind::UnexpectedToken,
+                message: "Expected '=>'".to_string(),
+                line_number: 1,
+                pos: 2,
+            }]);
+        }
+    }
+
     pub fn parse_expression(&mut self) -> Result<Vec<Statement>, Vec<Error>> {
         let expr = self.expression();
         match expr {
@@ -82,6 +139,9 @@ impl Parser {
         // Parse array expression
         if self.peek().token == Token::Delimiter(DelimiterToken::OpenBracket) {
             return self.array_expression();
+        }
+        if self.peek().token == Token::Delimiter(DelimiterToken::OpenParen) {
+            return self.parenthesis_expression();
         }
         if self.peek().token == Token::Delimiter(DelimiterToken::OpenBrace) {
             return self.parse_object_expression();

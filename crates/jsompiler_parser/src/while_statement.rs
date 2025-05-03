@@ -22,20 +22,9 @@ impl Parser {
         println!("{:?}", self.peek().token);
         let consequence = self.parse_block_statement()?;
         // Decode expression from statement
-        let expression = match value.first() {
-            Some(Statement::ExpressionStatement(expr)) => expr,
-            _ => {
-                return Err(vec![Error {
-                    error_kind: ErrorKind::UnexpectedToken,
-                    message: "Expected expression".to_string(),
-                    line_number: 1,
-                    pos: 2,
-                }]);
-            }
-        };
 
         Ok(vec![Statement::WhileStatement(WhileStatement {
-            condition: expression.clone(),
+            condition: value,
             consequence,
         })])
     }

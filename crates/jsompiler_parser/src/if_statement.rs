@@ -23,37 +23,26 @@ impl Parser {
         let value = self.parenthesis_expression()?;
         let consequence = Box::new(self.parse_block_statement()?);
         // Decode expression from statement
-        let expression = match value.first() {
-            Some(Statement::ExpressionStatement(expr)) => expr,
-            _ => {
-                return Err(vec![Error {
-                    error_kind: ErrorKind::UnexpectedToken,
-                    message: "Expected expression".to_string(),
-                    line_number: 1,
-                    pos: 2,
-                }]);
-            }
-        };
 
         if self.match_token(&Token::Keyword(KeywordToken::Else)) {
             if self.peek().token == Token::Keyword(KeywordToken::If) {
                 let alternative = Box::new(self.parse_if_statement()?);
                 return Ok(vec![Statement::IfStatement(IfStatement {
-                    condition: expression.clone(),
+                    condition: value,
                     consequence,
                     alternative: Some(alternative),
                 })]);
             }
             let alternative = Box::new(self.parse_block_statement()?);
             return Ok(vec![Statement::IfStatement(IfStatement {
-                condition: expression.clone(),
+                condition: value,
                 consequence,
                 alternative: Some(alternative),
             })]);
         }
 
         Ok(vec![Statement::IfStatement(IfStatement {
-            condition: expression.clone(),
+            condition: value,
             consequence,
             alternative: None,
         })])

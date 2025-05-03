@@ -105,6 +105,7 @@ impl Parser {
             | Token::Keyword(KeywordToken::Function)
             | Token::ContextualKeyword(ContextualKeywordToken::Await)
             | Token::ContextualKeyword(ContextualKeywordToken::Async)
+            | Token::Delimiter(DelimiterToken::OpenParen)
             | Token::Delimiter(DelimiterToken::OpenBracket) => self.parse_expression(),
             Token::RegExp {
                 pattern: _,
@@ -122,7 +123,6 @@ impl Parser {
             Token::Keyword(KeywordToken::For) => self.parser_for_loop_statement(),
             Token::ContextualKeyword(ContextualKeywordToken::Yield) => self.parse_yield_statement(),
             Token::Delimiter(DelimiterToken::OpenBrace) => self.parse_brace_block_or_object(),
-            Token::Delimiter(DelimiterToken::OpenParen) => self.parenthesis_expression(),
             Token::EOF => Ok(vec![]),
             _ => Err(vec![Error {
                 error_kind: ErrorKind::UnexpectedToken,
