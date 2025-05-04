@@ -2,6 +2,7 @@ use super::{Identifier, Parser, Statement};
 use crate::class_expression::ClassExpression;
 use crate::function_expression::{FunctionExpression, Parameter};
 use crate::object_expression::Property;
+use crate::template_literal::TemplateLiteral;
 use crate::{Error, ErrorKind};
 use jsompiler_lexer::symbol::{
     DelimiterToken, KeywordToken, Lexeme, LiteralToken, OperatorToken, Token,
@@ -11,6 +12,7 @@ use jsompiler_lexer::symbol::{
 pub enum Expression {
     Identifier(Identifier),
     Literal(LiteralToken),
+    TemplateLiteral(Box<TemplateLiteral>),
     ThisExpression,
     SpreadElement(Box<Expression>),
     MemberAccess {
@@ -172,6 +174,9 @@ impl Parser {
         } = &self.peek().token
         {
             return self.parse_regular_expression();
+        }
+        if self.peek().token == Token::Delimiter(DelimiterToken::Tilde) {
+            return self.parse_template_literal();
         }
 
         self.comparison() // Start from highest precedence binary operations

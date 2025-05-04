@@ -8,6 +8,7 @@ mod if_statement;
 mod let_statement;
 mod object_expression;
 mod return_statement;
+mod template_literal;
 mod while_statement;
 mod yield_statement;
 
@@ -106,6 +107,7 @@ impl Parser {
             | Token::ContextualKeyword(ContextualKeywordToken::Await)
             | Token::ContextualKeyword(ContextualKeywordToken::Async)
             | Token::Delimiter(DelimiterToken::OpenParen)
+            | Token::Delimiter(DelimiterToken::Tilde)
             | Token::Delimiter(DelimiterToken::OpenBracket) => self.parse_expression(),
             Token::RegExp {
                 pattern: _,
