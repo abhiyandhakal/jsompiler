@@ -375,8 +375,13 @@ impl Parser {
         let mut elements = Vec::new();
 
         while self.peek().token != Token::Delimiter(DelimiterToken::CloseBracket) {
-            let expr = self.expression()?;
-            elements.push(expr);
+            if self.peek().token == Token::Delimiter(DelimiterToken::Comma) {
+                let expr = Expression::Literal(LiteralToken::Undefined);
+                elements.push(expr);
+            } else {
+                let expr = self.expression()?;
+                elements.push(expr);
+            }
 
             if !self.match_token(&Token::Delimiter(DelimiterToken::Comma))
                 && self.peek().token != Token::Delimiter(DelimiterToken::CloseBracket)
