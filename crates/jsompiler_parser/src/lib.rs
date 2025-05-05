@@ -108,6 +108,8 @@ impl Parser {
             | Token::ContextualKeyword(ContextualKeywordToken::Async)
             | Token::Delimiter(DelimiterToken::OpenParen)
             | Token::Delimiter(DelimiterToken::Tilde)
+            | Token::Keyword(KeywordToken::True)
+            | Token::Keyword(KeywordToken::False)
             | Token::Delimiter(DelimiterToken::OpenBracket) => self.parse_expression(),
             Token::RegExp {
                 pattern: _,
@@ -151,9 +153,17 @@ impl Parser {
                 self.advance();
                 Some(LiteralToken::Number(value))
             }
-            Token::Literal(LiteralToken::Boolean(value)) => {
+            Token::Keyword(KeywordToken::True) => {
                 self.advance();
-                Some(LiteralToken::Boolean(value))
+                Some(LiteralToken::Boolean(true))
+            }
+            Token::Keyword(KeywordToken::False) => {
+                self.advance();
+                Some(LiteralToken::Boolean(false))
+            }
+            Token::Literal(LiteralToken::Null) => {
+                self.advance();
+                Some(LiteralToken::Null)
             }
             Token::Literal(LiteralToken::String(value)) => {
                 self.advance();
