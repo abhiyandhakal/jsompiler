@@ -1,5 +1,6 @@
 mod assignment_statement;
 mod block_statement;
+mod break_continue_statement;
 mod class_expression;
 mod expression;
 mod for_loop_statement;
@@ -45,6 +46,8 @@ pub enum Statement {
     AssignmentStatement(AssignmentStatement),
     ForLoopStatement(ForLoopStatement),
     YieldStatement(YieldStatement),
+    BreakStatement { label: Option<Expression> },
+    ContinueStatement { label: Option<Expression> },
 }
 
 #[derive(Debug, Clone)]
@@ -127,6 +130,9 @@ impl Parser {
             Token::Keyword(KeywordToken::For) => self.parser_for_loop_statement(),
             Token::ContextualKeyword(ContextualKeywordToken::Yield) => self.parse_yield_statement(),
             Token::Delimiter(DelimiterToken::OpenBrace) => self.parse_brace_block_or_object(),
+            Token::Keyword(KeywordToken::Break) | Token::Keyword(KeywordToken::Continue) => {
+                self.parse_break_or_continue_statement()
+            }
             Token::EOF => Ok(vec![]),
             _ => Err(vec![Error {
                 error_kind: ErrorKind::UnexpectedToken,
